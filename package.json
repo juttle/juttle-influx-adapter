@@ -1,0 +1,29 @@
+{
+  "name": "juttle-influxdb-backend",
+  "version": "0.1.0",
+  "description": "juttle influxdb backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/juttle/juttle-influxdb-backend"
+  },
+  "author": "Balazs Kutil <balazs@jut.io>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/juttle/juttle-influxdb-backend/issues"
+  },
+  "homepage": "https://github.com/juttle/juttle-influxdb-backend",
+  "dependencies": {
+    "bluebird": "^3.0.5",
+    "isomorphic-fetch": "^2.2.0",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "bluebird-retry": "^0.5.2",
+    "chai": "^3.4.1",
+    "mocha": "^2.3.4"
+  }
+}
