@@ -5,6 +5,7 @@ var JuttleMoment = require('juttle/lib/moment').JuttleMoment;
 
 global.Promise = Promise;
 var fetch = require('isomorphic-fetch');
+var Serializer = require('./lib/serializer');
 
 function InfluxBackend(config, Juttle) {
     var Write = Juttle.proc.sink.extend({
@@ -13,7 +14,7 @@ function InfluxBackend(config, Juttle) {
         initialize: function(options, params) {
             this.name = 'writex-influxdb';
 
-            var allowed_options = ['raw', 'db'];
+            var allowed_options = ['raw', 'db', 'intFields', 'valFields', 'measurementField'];
             var unknown = _.difference(_.keys(options), allowed_options);
 
             if (unknown.length > 0) {
@@ -23,23 +24,36 @@ function InfluxBackend(config, Juttle) {
                 });
             }
 
+            this.serializer = new Serializer(_.omit(options, 'raw', 'db'));
+
             this.db = options.db || 'test';
             this.url = config.url;
         },
 
         process: function(points) {
             var self = this;
-            console.log(JSON.stringify(points));
-            this.done();
-        },
 
-        toInflux: function(points) {
-            return _.map(points, function(p) {
-                [
-                    // [key] + tags, comma separated, sorted by key, escape spaces and commas inside of all
-                    // [fields]
-                    // [timestamp]
-                ].join(",")
+            var parsedUrl = url.parse(this.url);
+            var reqUrl;
+
+            _.extend(parsedUrl, { pathname: '/write', query: { 'db': this.db, 'epoch' : 'ms', } });
+
+            reqUrl = url.format(parsedUrl);
+
+            return fetch(reqUrl, {
+                method: 'post',
+                body: _.map(points, function(p) { return self.serializer.toInflux(p); }).join("\n")
+            }).then(function(response) {
+                // https://influxdb.com/docs/v0.9/guides/writing_data.html#writing-data-using-the-http-api
+                // section http response summary
+                if (response.statusCode == 204) {
+                    console.log('ok');
+                } else if (response.statusCode == 200) {
+                    console.log(response.text());
+                } else {
+                    console.log(response);
+                }
+                self.done();
             });
         }
     });
