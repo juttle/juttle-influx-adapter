@@ -78,13 +78,25 @@ describe('influxql translation', function() {
             });
 
             it('treats globs as regexes', function() {
-                var ast = parser.parseFilter('key1 =~ "val1"');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" =~ /val1/');
+                var ast = parser.parseFilter('key1 =~ "t*est"');
+                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" =~ /^t.*est$/');
             });
 
             it('in operator is converted to or sequence', function() {
-                var ast = parser.parseFilter('key1 in ["val1", "val2", "val3"]');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = "val1" OR "key1" = "val2" OR "key1" = "val3")');
+                var ast0 = parser.parseFilter('key1 in []');
+                var ast1 = parser.parseFilter('key1 in ["val1"]');
+                var ast2 = parser.parseFilter('key1 in ["val1", "val2"]');
+                var ast3 = parser.parseFilter('key1 in ["val1", "val2", "val3"]');
+
+                expect(compiler.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE false');
+                expect(compiler.build({}, {filter_ast: ast1})).to.equal('SELECT * FROM /.*/ WHERE "key1" = "val1"');
+                expect(compiler.build({}, {filter_ast: ast2})).to.equal('SELECT * FROM /.*/ WHERE "key1" = "val1" OR "key1" = "val2"');
+                expect(compiler.build({}, {filter_ast: ast3})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = "val1" OR "key1" = "val2") OR "key1" = "val3"');
+            });
+
+            it('handles compound ops', function() {
+                var ast0 = parser.parseFilter('key1 = "val1" and key1 = "val2" or key1 = "val3"');
+                expect(compiler.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = "val1" AND "key1" = "val2") OR "key1" = "val3"');
             });
 
             describe('NOT', function() {

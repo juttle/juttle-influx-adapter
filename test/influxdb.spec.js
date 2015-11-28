@@ -11,7 +11,7 @@ Juttle.backends.register('influxdb', influxdb({
 }, Juttle));
 
 describe('influxdb-backend tests', function () {
-    skip('reports nonexistent database', function() {});
+    it.skip('reports nonexistent database', function() {});
 
     it('reads no points initially', function() {
         return check_juttle({
