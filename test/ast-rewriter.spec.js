@@ -1,6 +1,6 @@
 var Rewriter = require('../lib/ast-rewriter');
-var parser = require('../../juttle/lib/parser');
-var ASTVisitor = require('../../juttle/lib/compiler/ast-visitor');
+var parser = require('juttle/lib/parser');
+var ASTVisitor = require('juttle/lib/compiler/ast-visitor');
 var _ = require('underscore');
 var expect = require('chai').expect;
 

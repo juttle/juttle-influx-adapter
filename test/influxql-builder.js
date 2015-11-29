@@ -1,5 +1,5 @@
 var expect = require('chai').expect;
-var parser = require('../../juttle/lib/parser');
+var parser = require('juttle/lib/parser');
 var Compiler = require('../lib/influxql-builder');
 
 describe('influxql translation', function() {
