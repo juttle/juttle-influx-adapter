@@ -5,7 +5,9 @@ var JuttleMoment = require('juttle/lib/moment').JuttleMoment;
 
 global.Promise = Promise;
 var fetch = require('isomorphic-fetch');
+
 var Serializer = require('./lib/serializer');
+var QueryBuilder = require('./lib/influxql-builder');
 
 function InfluxBackend(config, Juttle) {
     var Write = Juttle.proc.sink.extend({
@@ -63,7 +65,7 @@ function InfluxBackend(config, Juttle) {
         procName: 'readx-influxdb',
 
         initialize: function(options, params, pname, location, program, juttle) {
-            var allowed_options = ['raw', 'db'];
+            var allowed_options = ['raw', 'db', 'measurements', 'offset', 'limit', 'fields'];
             var unknown = _.difference(_.keys(options), allowed_options);
 
             if (unknown.length > 0) {
@@ -73,9 +75,15 @@ function InfluxBackend(config, Juttle) {
                 });
             }
 
-            this.db = options.db || 'test';
-            this.table = options.table || '/.*/';
+            this.serializer = new Serializer();
+
             this.url = config.url;
+            this.db = options.db;
+
+            this.queryBuilder = new QueryBuilder();
+            this.queryOptions = _.pick(options, 'measurements', 'offset', 'limit', 'fields');
+            this.queryFilter  = params;
+
             this.raw = options.raw;
         },
 
@@ -98,11 +106,13 @@ function InfluxBackend(config, Juttle) {
             return _.map(s.values, function(row) {
                 // FIXME: Our sinks can't handle null/undefined?
                 var obj  = _.object(s.columns, _.map(row, function(v) { return (v === null ? '' : v); }));
-                var meta = { _name: s.name };
 
-                obj.time = JuttleMoment.parse(obj.time);
+                // FIXME: sinks don't handle juttlemoment?
+                if (obj.time) {
+                    obj.time = JuttleMoment.parse(obj.time);
+                }
 
-                return _.extend(obj, meta);
+                return obj;
             });
         },
 
@@ -116,6 +126,7 @@ function InfluxBackend(config, Juttle) {
             if (!_.has(t2, 'time')) {
                 return 1;
             }
+            // FIXME: doesn't handle equal moments
             return JuttleMoment.compare('>', t1.time, t2.time) ? 1 : -1;
         },
 
@@ -144,7 +155,11 @@ function InfluxBackend(config, Juttle) {
             var parsedUrl = url.parse(this.url);
             var reqUrl;
 
-            _.extend(parsedUrl, { pathname: '/query', query: { 'q': this.raw, 'db': this.db, 'epoch' : 'ms' } });
+            var query = this.raw ? this.raw : this.queryBuilder.build(this.queryOptions, this.queryFilter);
+
+            console.log(query);
+
+            _.extend(parsedUrl, { pathname: '/query', query: { 'q': query, 'db': this.db, 'epoch' : 'ms' } });
 
             reqUrl = url.format(parsedUrl);
 
