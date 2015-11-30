@@ -54,17 +54,17 @@ describe('influxql translation', function() {
 
             it('simple filter string', function() {
                 var ast = parser.parseFilter('key = "val"');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = "val"');
+                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = \'val\'');
             });
 
             it('implicit and', function() {
                 var ast = parser.parseFilter('key1 = "val1" key2 = "val2"');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = "val1" AND "key2" = "val2"');
+                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' AND "key2" = \'val2\'');
             });
 
             it('and, nested or', function() {
                 var ast = parser.parseFilter('key1 = "val1" AND (key2 = "val2" OR key3 = "val3")');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = "val1" AND ("key2" = "val2" OR "key3" = "val3")');
+                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' AND ("key2" = \'val2\' OR "key3" = \'val3\')');
             });
 
             it('regular expressions', function() {
@@ -89,14 +89,14 @@ describe('influxql translation', function() {
                 var ast3 = parser.parseFilter('key1 in ["val1", "val2", "val3"]');
 
                 expect(compiler.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE false');
-                expect(compiler.build({}, {filter_ast: ast1})).to.equal('SELECT * FROM /.*/ WHERE "key1" = "val1"');
-                expect(compiler.build({}, {filter_ast: ast2})).to.equal('SELECT * FROM /.*/ WHERE "key1" = "val1" OR "key1" = "val2"');
-                expect(compiler.build({}, {filter_ast: ast3})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = "val1" OR "key1" = "val2") OR "key1" = "val3"');
+                expect(compiler.build({}, {filter_ast: ast1})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\'');
+                expect(compiler.build({}, {filter_ast: ast2})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' OR "key1" = \'val2\'');
+                expect(compiler.build({}, {filter_ast: ast3})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = \'val1\' OR "key1" = \'val2\') OR "key1" = \'val3\'');
             });
 
             it('handles compound ops', function() {
                 var ast0 = parser.parseFilter('key1 = "val1" and key1 = "val2" or key1 = "val3"');
-                expect(compiler.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = "val1" AND "key1" = "val2") OR "key1" = "val3"');
+                expect(compiler.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = \'val1\' AND "key1" = \'val2\') OR "key1" = \'val3\'');
             });
 
             describe('NOT', function() {
