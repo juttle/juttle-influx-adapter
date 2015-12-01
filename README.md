@@ -1,6 +1,6 @@
 # InfluxDB Backend for Juttle
 
-FIXME: build status
+[![Build Status](https://travis-ci.com/juttle/influxdb-backend.svg?token=C2AjzxBQoVUrmWXFQb7w)](https://travis-ci.com/juttle/influxdb-backend)
 
 ## About
 
