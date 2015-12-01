@@ -29,7 +29,7 @@ Then install the backend package:
 ## Configuration
 
 The backend needs to be registered and configured, so that it can be used from
-within Juttle. Use the following as an example:
+within Juttle. To do so, add the following to your `~/.juttle/config.json` file:
 
 ```
 {
@@ -59,12 +59,13 @@ Stores a single point in the `cpu` measurement of `test` database.
 
 When storing points, following conventions are used:
 
-    1. All keys, whose values are strings, are treated as [tags](). You can always
-       override this behavior using `valueFields` option:
-       `...|writex influxdb -valueFields "foo","bar"` will treat `foo` and `bar`
-       as fields, not tags.
-    2. All numeric fields are stored as floats. This can be changed by enumerating
-       the integer fields via `intFields` option.
+1. All keys, whose values are strings, are treated as [tags](). You can always
+   override this behavior using `valueFields` option:
+   `...|writex influxdb -valueFields "foo","bar"` will treat `foo` and `bar`
+   as fields, not tags.
+
+2. All numeric fields are stored as floats. This can be changed by enumerating
+   the integer fields via `intFields` option.
 
 For more complex examples, please take a look at Juttle scripts in the [examples]().
 
