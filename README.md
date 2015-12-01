@@ -81,4 +81,4 @@ started.
 
 ## License
 
-All files in this repository are licensed under Apache 2.0 License.
+All files in this repository are licensed under [Apache 2.0 License](LICENSE).
