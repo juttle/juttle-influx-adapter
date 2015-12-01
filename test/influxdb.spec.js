@@ -12,7 +12,7 @@ Juttle.backends.register('influxdb', influxdb({
 describe('influxdb-backend tests', function () {
     it.skip('reports nonexistent database', function() {});
 
-    it('reads no points initially', function() {
+    it.skip('reads no points initially', function() {
         return check_juttle({
             program: 'readx influxdb -db "testdb" -raw "SELECT * FROM /.*/"'
         })
