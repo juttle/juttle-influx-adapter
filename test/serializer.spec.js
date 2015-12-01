@@ -128,10 +128,9 @@ describe('serialization', function() {
             expect(serializer.toInflux(point)).to.equal('m str="can haz \\"quotes\\""');
         });
 
-        it.skip('throws on non-flat structures', function() {
-        });
-
         it.skip('sorts tags Go style', function() {
+            // Lexicographical sort on byte representation:
+            // https://golang.org/pkg/bytes/#Compare
         });
 
         it('handles serialization of large floats', function() {

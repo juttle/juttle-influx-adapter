@@ -1,85 +1,85 @@
 var expect = require('chai').expect;
 var parser = require('juttle/lib/parser');
-var Compiler = require('../lib/influxql-builder');
+var QueryBuilder = require('../../lib/query');
 
-describe('influxql translation', function() {
-    var compiler = new Compiler();
+describe('influxql query building', function() {
+    var builder = new QueryBuilder();
 
     describe('SELECT', function() {
         it('basic query', function() {
-            expect(compiler.build()).to.equal('SELECT * FROM /.*/');
+            expect(builder.build()).to.equal('SELECT * FROM /.*/');
         });
 
         it('with field', function() {
-            expect(compiler.build({fields: 'key1'})).to.equal('SELECT key1 FROM /.*/');
+            expect(builder.build({fields: 'key1'})).to.equal('SELECT key1 FROM /.*/');
         });
 
         it('with fields', function() {
-            expect(compiler.build({fields: ['key1', 'key2']})).to.equal('SELECT key1,key2 FROM /.*/');
+            expect(builder.build({fields: ['key1', 'key2']})).to.equal('SELECT key1,key2 FROM /.*/');
         });
 
         it('with measurement', function() {
-            expect(compiler.build({measurements: 'm'})).to.equal('SELECT * FROM m');
+            expect(builder.build({measurements: 'm'})).to.equal('SELECT * FROM m');
         });
 
         it('with measuremlnts', function() {
-            expect(compiler.build({measurements: ['m1', 'm2']})).to.equal('SELECT * FROM m1,m2');
+            expect(builder.build({measurements: ['m1', 'm2']})).to.equal('SELECT * FROM m1,m2');
         });
 
         it('with regexp', function() {
-            expect(compiler.build({fields: ['key1', 'key2']})).to.equal('SELECT key1,key2 FROM /.*/');
+            expect(builder.build({fields: ['key1', 'key2']})).to.equal('SELECT key1,key2 FROM /.*/');
         });
 
         describe('LIMIT', function() {
             it('adds clause', function() {
-                expect(compiler.build({limit: 1})).to.equal('SELECT * FROM /.*/ LIMIT 1');
+                expect(builder.build({limit: 1})).to.equal('SELECT * FROM /.*/ LIMIT 1');
             });
         });
 
         describe('OFFSET', function() {
             it('adds clause', function() {
-                expect(compiler.build({offset: 1})).to.equal('SELECT * FROM /.*/ OFFSET 1');
+                expect(builder.build({offset: 1})).to.equal('SELECT * FROM /.*/ OFFSET 1');
             });
 
             it('correct order with limit', function() {
-                expect(compiler.build({offset: 1, limit: 2})).to.equal('SELECT * FROM /.*/ LIMIT 2 OFFSET 1');
+                expect(builder.build({offset: 1, limit: 2})).to.equal('SELECT * FROM /.*/ LIMIT 2 OFFSET 1');
             });
         });
 
         describe('WHERE', function() {
             it('simple filter', function() {
                 var ast = parser.parseFilter('key = 1');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1');
             });
 
             it('simple filter string', function() {
                 var ast = parser.parseFilter('key = "val"');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = \'val\'');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = \'val\'');
             });
 
             it('implicit and', function() {
                 var ast = parser.parseFilter('key1 = "val1" key2 = "val2"');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' AND "key2" = \'val2\'');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' AND "key2" = \'val2\'');
             });
 
             it('and, nested or', function() {
                 var ast = parser.parseFilter('key1 = "val1" AND (key2 = "val2" OR key3 = "val3")');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' AND ("key2" = \'val2\' OR "key3" = \'val3\')');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' AND ("key2" = \'val2\' OR "key3" = \'val3\')');
             });
 
             it('regular expressions', function() {
                 var ast = parser.parseFilter('key1 =~ /val1/');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" =~ /val1/');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" =~ /val1/');
             });
 
             it('regular expression negations', function() {
                 var ast = parser.parseFilter('key1 !~ /val1/');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" !~ /val1/');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" !~ /val1/');
             });
 
             it('treats globs as regexes', function() {
                 var ast = parser.parseFilter('key1 =~ "t*est"');
-                expect(compiler.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" =~ /^t.*est$/');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" =~ /^t.*est$/');
             });
 
             it('in operator is converted to or sequence', function() {
@@ -88,15 +88,15 @@ describe('influxql translation', function() {
                 var ast2 = parser.parseFilter('key1 in ["val1", "val2"]');
                 var ast3 = parser.parseFilter('key1 in ["val1", "val2", "val3"]');
 
-                expect(compiler.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE false');
-                expect(compiler.build({}, {filter_ast: ast1})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\'');
-                expect(compiler.build({}, {filter_ast: ast2})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' OR "key1" = \'val2\'');
-                expect(compiler.build({}, {filter_ast: ast3})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = \'val1\' OR "key1" = \'val2\') OR "key1" = \'val3\'');
+                expect(builder.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE false');
+                expect(builder.build({}, {filter_ast: ast1})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\'');
+                expect(builder.build({}, {filter_ast: ast2})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' OR "key1" = \'val2\'');
+                expect(builder.build({}, {filter_ast: ast3})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = \'val1\' OR "key1" = \'val2\') OR "key1" = \'val3\'');
             });
 
             it('handles compound ops', function() {
                 var ast0 = parser.parseFilter('key1 = "val1" and key1 = "val2" or key1 = "val3"');
-                expect(compiler.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = \'val1\' AND "key1" = \'val2\') OR "key1" = \'val3\'');
+                expect(builder.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = \'val1\' AND "key1" = \'val2\') OR "key1" = \'val3\'');
             });
 
             describe('NOT', function() {

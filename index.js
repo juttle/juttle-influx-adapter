@@ -7,7 +7,7 @@ global.Promise = Promise;
 var fetch = require('isomorphic-fetch');
 
 var Serializer = require('./lib/serializer');
-var QueryBuilder = require('./lib/influxql-builder');
+var QueryBuilder = require('./lib/query');
 
 function InfluxBackend(config, Juttle) {
     var Write = Juttle.proc.sink.extend({

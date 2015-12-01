@@ -1,4 +1,4 @@
-var Rewriter = require('../lib/ast/rewrite');
+var Rewriter = require('../../lib/ast/rewrite');
 
 var parser = require('juttle/lib/parser');
 var ASTVisitor = require('juttle/lib/compiler/ast-visitor');
