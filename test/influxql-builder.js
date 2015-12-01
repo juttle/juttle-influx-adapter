@@ -123,7 +123,7 @@ describe('influxql translation', function() {
                 it('OR', function() {
                     var ast = parser.parseFilter('not (key1 = 1 OR key2 = 2)');
                 });
-            })
+            });
         });
     });
 });

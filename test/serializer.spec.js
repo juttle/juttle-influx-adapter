@@ -14,7 +14,7 @@ describe('serialization', function() {
 
         it('converts time to a juttle moment', function() {
             var point = serializer.toJuttle('test', ['time'], [Date.now()]);
-            expect(point.time).to.not.be.undefined;
+            expect(point.time).to.not.equal(undefined);
             expect(point.time).to.be.an.instanceof(JuttleMoment);
         });
 

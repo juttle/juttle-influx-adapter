@@ -25,6 +25,11 @@
   "devDependencies": {
     "chai": "^3.4.1",
     "mocha": "^2.3.4",
+    "jshint": "^2.9.1-rc1",
     "juttle": "juttle/juttle"
+  },
+  "engines": {
+      "node": ">=0.10.40",
+      "npm": ">=2.1.6"
   }
 }
