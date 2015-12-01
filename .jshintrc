@@ -7,7 +7,6 @@
         "setInterval" : false,
         "clearInterval" : false,
 
-        // Specs
         "after": false,
         "before": false,
         "afterEach": false,
