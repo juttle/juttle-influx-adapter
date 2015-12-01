@@ -108,7 +108,13 @@ describe('serialization', function() {
 
         it('serializes time as unix timestamps with millisecond precision', function() {
             var x = Date.now();
-            var point = { start: x, end: x + 10, _measurement: 'm' };
+            var point = { start: new JuttleMoment(x), end: new JuttleMoment(x + 10), _measurement: 'm' };
+
+            var vals = serializer.toInflux(point).split(' ')[1];
+            var end  = vals.split(',')[1];
+            var t    = end.split('=')[1];
+
+            expect(t).to.equal((x + 10) + '');
         });
 
         it('serializes boolean values', function() {
@@ -126,7 +132,6 @@ describe('serialization', function() {
         });
 
         it.skip('sorts tags Go style', function() {
-            var point = { str: 'can haz "quotes"', _measurement: 'm' };
         });
 
         it('handles serialization of large floats', function() {
