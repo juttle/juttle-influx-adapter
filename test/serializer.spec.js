@@ -139,6 +139,14 @@ describe('serialization', function() {
             expect(serializer.toInflux(point)).to.equal('m num=1e+21');
         });
 
+        describe('measurement option', function() {
+            it('is used as a fallback w/o measurementField', function() {
+                var serializer = new Serializer({measurement: 'm'});
+                var point = { num: 1 };
+                expect(serializer.toInflux(point).split(" ")[0]).to.equal('m');
+            });
+        });
+
         describe('intFields option', function() {
             it('serializes numbers as ints', function() {
                 var serializer = new Serializer({intFields: 'num,another_num', measurementField: '_measurement'});

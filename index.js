@@ -16,7 +16,7 @@ function InfluxBackend(config, Juttle) {
         initialize: function(options, params) {
             this.name = 'writex-influxdb';
 
-            var allowed_options = ['raw', 'db', 'intFields', 'valFields', 'measurementField'];
+            var allowed_options = ['raw', 'db', 'intFields', 'valFields', 'measurementField', 'measurement'];
             var unknown = _.difference(_.keys(options), allowed_options);
 
             if (unknown.length > 0) {
