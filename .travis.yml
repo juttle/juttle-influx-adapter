@@ -4,7 +4,7 @@ node_js:
     - '0.10'
 
 before_script:
-    - git clone https://${GITHUB_TOKEN}:x-oauth-basic@github.com/juttle/juttle.git
+    - git clone https://${GITHUB_AUTH}:x-oauth-basic@github.com/juttle/juttle.git
     - pushd juttle ; npm install ; npm link ; popd
 
 script:
