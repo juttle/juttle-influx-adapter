@@ -26,11 +26,10 @@ var check_rewrite = function(from, to) {
 };
 
 describe('rewriter', function() {
-    it.skip('handles key1 in []', function() {
+    it('handles key1 in []', function() {
         var tests = [
-            ['key1 in []', 'key1 in []'],
-            ['', 'key1 in []'],
-            ['key1 in [] and key1 = "val1"', 'key1 in [] and key1 = "val1"']
+            ['key1 in []', 'false'],
+            ['key1 in [] and key1 = "val1"', 'false and key1 = "val1"']
         ];
         _.each(tests, function(test) { check_rewrite(test[0], test[1]); });
     });
