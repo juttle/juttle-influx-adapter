@@ -20,10 +20,7 @@ function InfluxBackend(config, Juttle) {
             var unknown = _.difference(_.keys(options), allowed_options);
 
             if (unknown.length > 0) {
-                throw this.compile_error('RT-UNKNOWN-OPTION-ERROR', {
-                    proc: this.name,
-                    option: unknown[0]
-                });
+                throw new Error('Unknown option ' + unknown[0]);
             }
 
             this.serializer = new Serializer(_.omit(options, 'raw', 'db'));
@@ -48,9 +45,9 @@ function InfluxBackend(config, Juttle) {
             }).then(function(response) {
                 // https://influxdb.com/docs/v0.9/guides/writing_data.html#writing-data-using-the-http-api
                 // section http response summary
-                if (response.statusCode == 204) {
+                if (response.status === 204) {
                     console.log('ok');
-                } else if (response.statusCode == 200) {
+                } else if (response.status === 200) {
                     console.log(response.text());
                 } else {
                     console.log(response);
@@ -65,17 +62,14 @@ function InfluxBackend(config, Juttle) {
         procName: 'read-influxdb',
 
         initialize: function(options, params, pname, location, program, juttle) {
-            var allowed_options = ['raw', 'db', 'measurements', 'offset', 'limit', 'fields'];
+            var allowed_options = ['raw', 'db', 'measurements', 'offset', 'limit', 'fields', 'measurementField'];
             var unknown = _.difference(_.keys(options), allowed_options);
 
             if (unknown.length > 0) {
-                throw this.compile_error('RT-UNKNOWN-OPTION-ERROR', {
-                    proc: 'read-influxdb',
-                    option: unknown[0]
-                });
+                throw new Error('Unknown option ' + unknown[0]);
             }
 
-            this.serializer = new Serializer();
+            this.serializer = new Serializer(_.pick(options, 'measurementField'));
 
             this.url = config.url;
             this.db = options.db;
@@ -94,8 +88,7 @@ function InfluxBackend(config, Juttle) {
             .then(function(data) {
                 self.emit(self.parse(data));
                 self.emit_eof();
-            })
-            .catch(function(err) {
+            }).catch(function(err) {
                 self.trigger('error', err.message);
                 self.logOnce('error', err.message);
                 self.emit_eof();
@@ -103,16 +96,9 @@ function InfluxBackend(config, Juttle) {
         },
 
         toNative: function(s) {
+            var self = this;
             return _.map(s.values, function(row) {
-                // FIXME: Our sinks can't handle null/undefined?
-                var obj  = _.object(s.columns, _.map(row, function(v) { return (v === null ? '' : v); }));
-
-                // FIXME: sinks don't handle juttlemoment?
-                if (obj.time) {
-                    obj.time = JuttleMoment.parse(obj.time);
-                }
-
-                return obj;
+                return self.serializer.toJuttle(s.name, s.columns, row);
             });
         },
 
@@ -134,7 +120,7 @@ function InfluxBackend(config, Juttle) {
             var e  = _.find(data.results, 'error');
 
             if (e && e.error) {
-                throw this.runtime_error('RT-SOURCE-BACKEND-ERROR', { message: e.error });
+                throw new Error(e.error);
             }
 
             var results = _.find(data.results, 'series') || {};
@@ -143,7 +129,7 @@ function InfluxBackend(config, Juttle) {
                 return [];
             } else {
                 return _.chain(results.series)
-                    .map(this.toNative)
+                    .map(this.toNative.bind(this))
                     .flatten()
                     .sort(this._sort)
                     .value();
@@ -157,8 +143,6 @@ function InfluxBackend(config, Juttle) {
 
             var query = this.raw ? this.raw : this.queryBuilder.build(this.queryOptions, this.queryFilter);
 
-            console.log(query);
-
             _.extend(parsedUrl, { pathname: '/query', query: { 'q': query, 'db': this.db, 'epoch' : 'ms' } });
 
             reqUrl = url.format(parsedUrl);
@@ -171,11 +155,13 @@ function InfluxBackend(config, Juttle) {
                 return fetch(reqUrl)
                     .then(function(response) {
                         if (response.status < 200 || response.status >= 300) {
-                            throw new self.runtime_error('RT-INTERNAL-ERROR',
+                            throw self.runtime_error('RT-INTERNAL-ERROR',
                                 { error: response.status + ': ' + response.statusText + ' for ' + reqUrl }
                             );
                         }
                         return response.json();
+                    }).catch(function(e) {
+                        throw e;
                     });
             }
         },

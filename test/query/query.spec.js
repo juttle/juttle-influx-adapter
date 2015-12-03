@@ -83,15 +83,23 @@ describe('influxql query building', function() {
             });
 
             it('in operator is converted to or sequence', function() {
-                var ast0 = parser.parseFilter('key1 in []');
                 var ast1 = parser.parseFilter('key1 in ["val1"]');
                 var ast2 = parser.parseFilter('key1 in ["val1", "val2"]');
                 var ast3 = parser.parseFilter('key1 in ["val1", "val2", "val3"]');
 
-                expect(builder.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE false');
                 expect(builder.build({}, {filter_ast: ast1})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\'');
                 expect(builder.build({}, {filter_ast: ast2})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' OR "key1" = \'val2\'');
                 expect(builder.build({}, {filter_ast: ast3})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = \'val1\' OR "key1" = \'val2\') OR "key1" = \'val3\'');
+            });
+
+            it('in operator numeric', function() {
+                var ast = parser.parseFilter('key1 in [1, 2]');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = 1 OR "key1" = 2');
+            });
+
+            it('in operator with empty array is handled', function() {
+                var ast0 = parser.parseFilter('key1 in []');
+                expect(builder.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE false');
             });
 
             it('handles compound ops', function() {
@@ -101,27 +109,48 @@ describe('influxql query building', function() {
 
             describe('NOT', function() {
                 it('in', function() {
-                    var ast = parser.parseFilter('not (key1 in ["val1", "val2", "val3"])');
+                    var ast = parser.parseFilter('not (key1 in ["val1", "val2"])');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != \'val1\' AND "key1" != \'val2\'');
                 });
 
                 it('>', function() {
                     var ast = parser.parseFilter('not (key1 > 1)');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" <= 1');
+                });
+
+                it('<', function() {
+                    var ast = parser.parseFilter('not (key1 < 1)');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" >= 1');
                 });
 
                 it('=', function() {
                     var ast = parser.parseFilter('not (key1 = 1)');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1');
                 });
 
                 it('=~', function() {
                     var ast = parser.parseFilter('not (key1 =~ /val1/)');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" !~ /val1/');
                 });
 
-                it('AND', function() {
+                it('AND implicit', function() {
                     var ast = parser.parseFilter('not (key1 = 1 key2 = 2)');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1 OR "key2" != 2');
+                });
+
+                it('AND explicit', function() {
+                    var ast = parser.parseFilter('not (key1 = 1 and key2 = 2)');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1 OR "key2" != 2');
+                });
+
+                it('AND explicit inequalities', function() {
+                    var ast = parser.parseFilter('not (key1 < 1 and key2 > 2)');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" >= 1 OR "key2" <= 2');
                 });
 
                 it('OR', function() {
                     var ast = parser.parseFilter('not (key1 = 1 OR key2 = 2)');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1 AND "key2" != 2');
                 });
             });
         });

@@ -21,6 +21,8 @@ var check_rewrite = function(from, to) {
     var from_ast = strip.visit(parser.parseFilter(from));
     var to_ast = strip.visit(parser.parseFilter(to));
 
+    console.log(from_ast);
+
     var new_ast = rewriter.rewrite(from_ast);
     expect(new_ast).to.deep.equal(to_ast, from + ' -> ' + to);
 };
@@ -28,6 +30,7 @@ var check_rewrite = function(from, to) {
 describe('rewriter', function() {
     it('handles key1 in []', function() {
         var tests = [
+            ['(key1 in [])', 'false'],
             ['key1 in []', 'false'],
             ['key1 in [] and key1 = "val1"', 'false and key1 = "val1"']
         ];
@@ -36,6 +39,8 @@ describe('rewriter', function() {
 
     it('rewrites in to or', function() {
         var tests = [
+            ['key in [1, 5]', 'key = 1 or key = 5'],
+            ['value in [1, 5]', 'value = 1 or value = 5'],
             ['key1 in ["val1"]', 'key1 = "val1"'],
             ['key1 in ["val1", "val2"]', 'key1 = "val1" or key1 = "val2"'],
             ['key1 in ["val1", "val2", "val3"]','key1 = "val1" or key1 = "val2" or key1 = "val3"'],
@@ -56,6 +61,7 @@ describe('rewriter', function() {
 
             // De morgan
             ['not (key1 = "val1" and key1 = "val2")', '(key1 != "val1" or key1 != "val2")'],
+            ['not ( key1 < "val1" or key1 > "val1" )', '(key1 >= "val1" and key1 <= "val1")'],
             ['not (key1 = "val1" or key1 = "val2")', '(key1 != "val1" and key1 != "val2")'],
             ['not (key1 = "val1" or key1 = "val2" or key1 = "val3")', '(key1 != "val1" and key1 != "val2" and key1 != "val3")'],
 
@@ -68,6 +74,14 @@ describe('rewriter', function() {
 
             // Funky
             ['not ( ( not (key1 = "val1") ) and ( not ( key1 = "val2" ) ) )', '(key1 == "val1") or (key1 == "val2")']
+        ];
+
+        _.each(tests, function(test) { check_rewrite(test[0], test[1]); });
+    });
+
+    it('handles not in', function() {
+        var tests = [
+            ['not (key1 in ["val1", "val2"])', 'key1 != "val1" and key1 != "val2"']
         ];
 
         _.each(tests, function(test) { check_rewrite(test[0], test[1]); });
