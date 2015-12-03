@@ -70,10 +70,8 @@ describe('@live influxdb tests', function () {
     it('reports nonexistent database', function() {
         return check_juttle({
             program: 'read influxdb -db "doesnt_exist" -raw "SELECT * FROM /.*/"'
-        }).then(function(e) {
-            throw new Error('success');
-        }).catch(function(e) {
-            expect(e.message).to.include('database not found');
+        }).then(function(res) {
+            expect(res.errors[0]).to.include('database not found');
         });
     });
 
@@ -105,10 +103,18 @@ describe('@live influxdb tests', function () {
 
         it('fields', function() {
             return check_juttle({
+                program: 'read influxdb -db "test" -measurements "cpu" -limit 1 -fields "value" | @logger'
+            }).then(function(res) {
+                expect(_.keys(res.sinks.logger[0])).to.deep.equal(['time', 'value']);
+                expect(res.sinks.logger[0].value).to.equal(0);
+            });
+        });
+
+        it('fields report if values not included', function() {
+            return check_juttle({
                 program: 'read influxdb -db "test" -measurements "cpu" -limit 1 -fields "host" | @logger'
             }).then(function(res) {
-                expect(_.keys(res.sinks.logger[0])).to.deep.equal(['host']);
-                expect(res.sinks.logger[0].host).to.equal('host1');
+                expect(res.errors[0]).to.include('at least one field in select clause');
             });
         });
 
