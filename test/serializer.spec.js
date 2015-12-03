@@ -161,12 +161,5 @@ describe('serialization', function() {
                 expect(serializer.toInflux(point)).to.equal('m,tag=tag str="one",another_str="two"');
             });
         });
-
-        describe('precision option', function() {
-            it('serializes floats to 4 decimal places by default', function() {
-                var point = { num: 1.1, _measurement: 'm' };
-                expect(serializer.toInflux(point)).to.equal('m num=1.1');
-            });
-        });
     });
 });
