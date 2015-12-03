@@ -11,10 +11,10 @@ var QueryBuilder = require('./lib/query');
 
 function InfluxBackend(config, Juttle) {
     var Write = Juttle.proc.sink.extend({
-        procName: 'writex-influxdb',
+        procName: 'write-influxdb',
 
         initialize: function(options, params) {
-            this.name = 'writex-influxdb';
+            this.name = 'write-influxdb';
 
             var allowed_options = ['raw', 'db', 'intFields', 'valFields', 'measurementField', 'measurement'];
             var unknown = _.difference(_.keys(options), allowed_options);
@@ -62,7 +62,7 @@ function InfluxBackend(config, Juttle) {
 
     var Read = Juttle.proc.base.extend({
         sourceType: 'batch',
-        procName: 'readx-influxdb',
+        procName: 'read-influxdb',
 
         initialize: function(options, params, pname, location, program, juttle) {
             var allowed_options = ['raw', 'db', 'measurements', 'offset', 'limit', 'fields'];
@@ -70,7 +70,7 @@ function InfluxBackend(config, Juttle) {
 
             if (unknown.length > 0) {
                 throw this.compile_error('RT-UNKNOWN-OPTION-ERROR', {
-                    proc: 'readx-influxdb',
+                    proc: 'read-influxdb',
                     option: unknown[0]
                 });
             }
