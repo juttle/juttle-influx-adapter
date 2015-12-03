@@ -21,8 +21,6 @@ var check_rewrite = function(from, to) {
     var from_ast = strip.visit(parser.parseFilter(from));
     var to_ast = strip.visit(parser.parseFilter(to));
 
-    console.log(from_ast);
-
     var new_ast = rewriter.rewrite(from_ast);
     expect(new_ast).to.deep.equal(to_ast, from + ' -> ' + to);
 };
