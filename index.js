@@ -89,7 +89,7 @@ function InfluxBackend(config, Juttle) {
                 self.emit(self.parse(data));
                 self.emit_eof();
             }).catch(function(err) {
-                self.trigger('error', err.message);
+                self.trigger('error', err);
                 self.logOnce('error', err.message);
                 self.emit_eof();
             });
