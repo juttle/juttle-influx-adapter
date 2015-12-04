@@ -39,19 +39,32 @@ function InfluxBackend(config, Juttle) {
 
             reqUrl = url.format(parsedUrl);
 
+            var body = _.compact(_.map(points, function(p) {
+                try {
+                    return self.serializer.toInflux(p);
+                } catch(err) {
+                    self.trigger('warning', err);
+                    self.logOnce('error', err.message);
+                    return null;
+                }
+            })).join("\n");
+
             return fetch(reqUrl, {
                 method: 'post',
-                body: _.map(points, function(p) { return self.serializer.toInflux(p); }).join("\n")
+                body: body
             }).then(function(response) {
                 // https://influxdb.com/docs/v0.9/guides/writing_data.html#writing-data-using-the-http-api
                 // section http response summary
-                if (response.status === 204) {
-                    console.log('ok');
-                } else if (response.status === 200) {
-                    console.log(response.text());
+                if (response.status === 200) {
+                    throw new Error(response.text());
+                } else if (response.status > 300) {
+                    throw new Error(response.text());
                 } else {
-                    console.log(response);
+                    self.done();
                 }
+            }).catch(function(err) {
+                self.trigger('error', err);
+                self.logOnce('error', err.message);
                 self.done();
             });
         }

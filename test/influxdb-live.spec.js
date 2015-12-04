@@ -40,6 +40,15 @@ var DB = {
         });
     },
 
+    query: function(q) {
+        var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { 'q': q, 'db': 'test' } });
+        return fetch(url.format(requestUrl)).then(function(r) {
+           return r.json();
+        }).catch(function(e) {
+            throw e;
+        });
+    },
+
     insert: function() {
         var payload = "";
         var requestUrl = _.extend(influx_api_url, { pathname: '/write', query: { 'db': 'test' } });
@@ -59,23 +68,23 @@ var DB = {
 };
 
 describe('@live influxdb tests', function () {
-    before(function(done) {
-        DB.create().then(function() { return DB.insert(); }).finally(done);
-    });
-
-    after(function(done) {
-        DB.drop().finally(done);
-    });
-
-    it('reports nonexistent database', function() {
-        return check_juttle({
-            program: 'read influxdb -db "doesnt_exist" -raw "SELECT * FROM /.*/"'
-        }).then(function(res) {
-            expect(res.errors[0]).to.include('database not found');
-        });
-    });
-
     describe('read', function() {
+        before(function(done) {
+            DB.drop().then(function() { return DB.create() }).then(function() { return DB.insert(); }).finally(done);
+        });
+
+        after(function(done) {
+            DB.drop().finally(done);
+        });
+
+        it('reports error on nonexistent database', function() {
+            return check_juttle({
+                program: 'read influxdb -db "doesnt_exist" -raw "SELECT * FROM /.*/"'
+            }).then(function(res) {
+                expect(res.errors[0]).to.include('database not found');
+            });
+        });
+
         it('-raw option', function() {
             return check_juttle({
                 program: 'read influxdb -db "test" -raw "SELECT * FROM cpu" | @logger'
@@ -110,7 +119,7 @@ describe('@live influxdb tests', function () {
             });
         });
 
-        it('fields report if values not included', function() {
+        it('fields reports error if values not included', function() {
             return check_juttle({
                 program: 'read influxdb -db "test" -measurements "cpu" -limit 1 -fields "host" | @logger'
             }).then(function(res) {
@@ -244,6 +253,117 @@ describe('@live influxdb tests', function () {
                     program: 'read influxdb -db "test" -measurementField "measurement" -measurements "cpu" -limit 1 | @logger'
                 }).then(function(res) {
                     expect(res.sinks.logger[0].measurement).to.equal('cpu');
+                });
+            });
+        });
+    });
+
+    describe('write', function() {
+        beforeEach(function(done) {
+            DB.drop().then(function() { return DB.create() }).finally(done);
+        });
+
+        afterEach(function(done) {
+            DB.drop().finally(done);
+        });
+
+        it('reports warning without measurement', function() {
+            return check_juttle({
+                program: 'emit -points [{"host":"host0","value":0}] | write influxdb -db "test"'
+            }).then(function(res) {
+                expect(res.warnings[0]).to.include('point is missing a measurement');
+            });
+        });
+
+        it('point', function() {
+            return check_juttle({
+                program: 'emit -points [{"host":"host0","value":0}] | write influxdb -db "test" -measurement "cpu"'
+            }).then(function(res) {
+                DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
+                    var data = json.results[0].series[0];
+                    expect(data.values[0][1]).to.equal("host0");
+                    expect(data.values[0][2]).to.equal(0);
+                });
+            });
+        });
+
+        it('point with time', function() {
+            var t = new Date(Date.now());
+            return check_juttle({
+                program: 'emit -points [{"time":"' + t.toISOString() + '","host":"host0","value":0}] | write influxdb -db "test" -measurement "cpu"'
+            }).then(function(res) {
+                DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
+                    var data = json.results[0].series[0];
+                    expect(data.values[0][0]).to.equal(t.toISOString());
+                    expect(data.values[0][1]).to.equal("host0");
+                    expect(data.values[0][2]).to.equal(0);
+                });
+            });
+        });
+
+        it('valFields override', function() {
+            return check_juttle({
+                program: 'emit -points [{"host":"host0","value":0,"str":"value"}] | write influxdb -db "test" -measurement "cpu" -valFields "str"'
+            }).then(function(res) {
+                DB.query('SHOW FIELD KEYS').then(function(json) {
+                    var fields = _.flatten(json.results[0].series[0].values);
+                    expect(fields).to.include('str');
+                });
+            });
+        });
+
+        it('intFields override', function() {
+            return check_juttle({
+                program: 'emit -points [{"host":"host0","value":0,"int_value":1}] | write influxdb -db "test" -measurement "cpu" -intFields "int_value"'
+            }).then(function(res) {
+                DB.query('SELECT * FROM cpu WHERE int_value = 1').then(function(json) {
+                    var data = json.results[0].series[0];
+                    expect(data.values[0][1]).to.equal("host0");
+                    expect(data.values[0][2]).to.equal(1);
+                    expect(data.values[0][3]).to.equal(0);
+                });
+            });
+        });
+
+        it('can use measurement from the point', function() {
+            return check_juttle({
+                program: 'emit -points [{"m":"cpu","host":"host0","value":0}] | write influxdb -db "test" -measurementField "m"'
+            }).then(function(res) {
+                DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
+                    var data = json.results[0].series[0];
+                    expect(data.values[0][1]).to.equal("host0");
+                    expect(data.values[0][2]).to.equal(0);
+                });
+            });
+        });
+
+        it('two points', function() {
+            // This is a workaround for emit adding same time in ms to both points
+            // and influx treating time as primary index, overwriting the points
+            var t1 = new Date(Date.now());
+            var t2 = new Date(Date.now() - 1000);
+
+            return check_juttle({
+                program: 'emit -points [{"host":"host0","value":0,"time":"' + t1.toISOString() + '"},{"host":"host1","value":1,"time":" ' + t2.toISOString() + '"}] | write influxdb -db "test" -measurement "cpu"'
+            }).then(function(res) {
+                DB.query('SELECT * FROM cpu').then(function(json) {
+                    var data = json.results[0].series[0];
+                    expect(data.values.length).to.equal(2);
+                });
+            });
+        });
+
+        it.skip('emits a warning on serialization but continues', function() {
+            return check_juttle({
+                program: 'emit -points [{"host":"host0","value":0},{"m":"cpu","host":"host1","value":1}] | write influxdb -db "test" -measurementField "m"'
+            }).then(function(res) {
+                expect(res.warnings.length).to.equal(1);
+                expect(res.warnings[0]).to.include('point is missing a measurement');
+                DB.query('SELECT * FROM cpu').then(function(json) {
+                    console.log(json);
+                    var data = json.results[0].series[0];
+                    expect(data.values[0][1]).to.equal("host1");
+                    expect(data.values[0][2]).to.equal(1);
                 });
             });
         });
