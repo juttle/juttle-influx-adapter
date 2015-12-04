@@ -1,19 +1,23 @@
-var juttle_test_utils = require('juttle/test/runtime/specs/juttle-test-utils');
-var check_juttle = juttle_test_utils.check_juttle;
 var _ = require('underscore');
-
 var expect = require('chai').expect;
-var influxdb = require('../index.js');
-var Juttle = require('juttle/lib/runtime').Juttle;
 var url = require('url');
+var retry = require('bluebird-retry');
 
 var Promise = require('bluebird');
 global.Promise = Promise;
 
 var fetch = require('isomorphic-fetch');
 
-var influx_api_url = url.parse('http://localhost:8086/');
+var juttle_test_utils = require('juttle/test/runtime/specs/juttle-test-utils');
+var check_juttle = juttle_test_utils.check_juttle;
 
+var influxdb = require('../index.js');
+
+var influx_api_url = url.parse('http://localhost:8086/');
+var retry_options = { interval: 50, timeout: 250 };
+
+
+var Juttle = require('juttle/lib/runtime').Juttle;
 Juttle.backends.register('influxdb', influxdb({
     url: url.format(influx_api_url)
 }, Juttle));
@@ -279,11 +283,13 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'emit -points [{"host":"host0","value":0}] | write influxdb -db "test" -measurement "cpu"'
             }).then(function(res) {
-                DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
-                    var data = json.results[0].series[0];
-                    expect(data.values[0][1]).to.equal("host0");
-                    expect(data.values[0][2]).to.equal(0);
-                });
+                return retry(function() {
+                    return DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
+                        var data = json.results[0].series[0];
+                        expect(data.values[0][1]).to.equal("host0");
+                        expect(data.values[0][2]).to.equal(0);
+                    });
+                }, retry_options);
             });
         });
 
@@ -292,12 +298,14 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'emit -points [{"time":"' + t.toISOString() + '","host":"host0","value":0}] | write influxdb -db "test" -measurement "cpu"'
             }).then(function(res) {
-                DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
-                    var data = json.results[0].series[0];
-                    expect(data.values[0][0]).to.equal(t.toISOString());
-                    expect(data.values[0][1]).to.equal("host0");
-                    expect(data.values[0][2]).to.equal(0);
-                });
+                return retry(function() {
+                    return DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
+                        var data = json.results[0].series[0];
+                        expect(data.values[0][0]).to.equal(t.toISOString());
+                        expect(data.values[0][1]).to.equal("host0");
+                        expect(data.values[0][2]).to.equal(0);
+                    });
+                }, retry_options);
             });
         });
 
@@ -305,10 +313,12 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'emit -points [{"host":"host0","value":0,"str":"value"}] | write influxdb -db "test" -measurement "cpu" -valFields "str"'
             }).then(function(res) {
-                DB.query('SHOW FIELD KEYS').then(function(json) {
-                    var fields = _.flatten(json.results[0].series[0].values);
-                    expect(fields).to.include('str');
-                });
+                return retry(function() {
+                    return DB.query('SHOW FIELD KEYS').then(function(json) {
+                        var fields = _.flatten(json.results[0].series[0].values);
+                        expect(fields).to.include('str');
+                    });
+                }, retry_options);
             });
         });
 
@@ -316,12 +326,14 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'emit -points [{"host":"host0","value":0,"int_value":1}] | write influxdb -db "test" -measurement "cpu" -intFields "int_value"'
             }).then(function(res) {
-                DB.query('SELECT * FROM cpu WHERE int_value = 1').then(function(json) {
-                    var data = json.results[0].series[0];
-                    expect(data.values[0][1]).to.equal("host0");
-                    expect(data.values[0][2]).to.equal(1);
-                    expect(data.values[0][3]).to.equal(0);
-                });
+                return retry(function() {
+                    return DB.query('SELECT * FROM cpu WHERE int_value = 1').then(function(json) {
+                        var data = json.results[0].series[0];
+                        expect(data.values[0][1]).to.equal("host0");
+                        expect(data.values[0][2]).to.equal(1);
+                        expect(data.values[0][3]).to.equal(0);
+                    });
+                }, retry_options);
             });
         });
 
@@ -329,11 +341,13 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'emit -points [{"m":"cpu","host":"host0","value":0}] | write influxdb -db "test" -measurementField "m"'
             }).then(function(res) {
-                DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
-                    var data = json.results[0].series[0];
-                    expect(data.values[0][1]).to.equal("host0");
-                    expect(data.values[0][2]).to.equal(0);
-                });
+                return retry(function() {
+                    return DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
+                        var data = json.results[0].series[0];
+                        expect(data.values[0][1]).to.equal("host0");
+                        expect(data.values[0][2]).to.equal(0);
+                    });
+                }, retry_options);
             });
         });
 
@@ -346,10 +360,12 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'emit -points [{"host":"host0","value":0,"time":"' + t1.toISOString() + '"},{"host":"host1","value":1,"time":" ' + t2.toISOString() + '"}] | write influxdb -db "test" -measurement "cpu"'
             }).then(function(res) {
-                DB.query('SELECT * FROM cpu').then(function(json) {
-                    var data = json.results[0].series[0];
-                    expect(data.values.length).to.equal(2);
-                });
+                return retry(function() {
+                    return DB.query('SELECT * FROM cpu').then(function(json) {
+                        var data = json.results[0].series[0];
+                        expect(data.values.length).to.equal(2);
+                    });
+                }, retry_options);
             });
         });
 
@@ -359,12 +375,14 @@ describe('@live influxdb tests', function () {
             }).then(function(res) {
                 expect(res.warnings.length).to.equal(1);
                 expect(res.warnings[0]).to.include('point is missing a measurement');
-                DB.query('SELECT * FROM cpu').then(function(json) {
-                    console.log(json);
-                    var data = json.results[0].series[0];
-                    expect(data.values[0][1]).to.equal("host1");
-                    expect(data.values[0][2]).to.equal(1);
-                });
+                return retry(function() {
+                    DB.query('SELECT * FROM cpu').then(function(json) {
+                        console.log(json);
+                        var data = json.results[0].series[0];
+                        expect(data.values[0][1]).to.equal("host1");
+                        expect(data.values[0][2]).to.equal(1);
+                    });
+                }, retry_options);
             });
         });
     });
