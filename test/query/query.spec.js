@@ -153,6 +153,18 @@ describe('influxql query building', function() {
                     expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1 AND "key2" != 2');
                 });
             });
+
+            describe('time in filters', function() {
+                it('is not allowed as time field', function() {
+                    var ast = parser.parseFilter('time > 1449229920');
+                    expect(builder.build.bind(builder, {}, {filter_ast: ast})).to.throw(/Time field is not allowed in filter/);
+                });
+
+                it('is not allowed as moment', function() {
+                    var ast = parser.parseFilter('created_at > :now:');
+                    expect(builder.build.bind(builder, {}, {filter_ast: ast})).to.throw(/Filtering by time is not supported/);
+                });
+            });
         });
     });
 });
