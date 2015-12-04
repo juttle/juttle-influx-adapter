@@ -75,7 +75,12 @@ function InfluxBackend(config, Juttle) {
             this.db = options.db;
 
             this.queryBuilder = new QueryBuilder();
-            this.queryOptions = _.pick(options, 'measurements', 'offset', 'limit', 'fields');
+            this.queryOptions = _.defaults(
+                _.pick(options, 'measurements', 'offset', 'limit', 'fields'),
+                {
+                    limit: 1000,
+                }
+            );
             this.queryFilter  = params;
 
             this.raw = options.raw;
