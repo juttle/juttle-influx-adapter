@@ -369,15 +369,14 @@ describe('@live influxdb tests', function () {
             });
         });
 
-        it.skip('emits a warning on serialization but continues', function() {
+        it('emits a warning on serialization but continues', function() {
             return check_juttle({
-                program: 'emit -points [{"host":"host0","value":0},{"m":"cpu","host":"host1","value":1}] | write influxdb -db "test" -measurementField "m"'
+                program: 'emit -every :1ms: -points [{"host":"host0","value":0},{"m":"cpu","host":"host1","value":1}] | write influxdb -db "test" -measurementField "m"'
             }).then(function(res) {
                 expect(res.warnings.length).to.equal(1);
                 expect(res.warnings[0]).to.include('point is missing a measurement');
                 return retry(function() {
-                    DB.query('SELECT * FROM cpu').then(function(json) {
-                        console.log(json);
+                    return DB.query('SELECT * FROM cpu WHERE value = 1').then(function(json) {
                         var data = json.results[0].series[0];
                         expect(data.values[0][1]).to.equal("host1");
                         expect(data.values[0][2]).to.equal(1);
