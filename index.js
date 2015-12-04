@@ -160,9 +160,7 @@ function InfluxBackend(config, Juttle) {
                 return fetch(reqUrl)
                     .then(function(response) {
                         if (response.status < 200 || response.status >= 300) {
-                            throw self.runtime_error('RT-INTERNAL-ERROR',
-                                { error: response.status + ': ' + response.statusText + ' for ' + reqUrl }
-                            );
+                            throw new Error(response.status + ': ' + response.statusText + ' for ' + reqUrl);
                         }
                         return response.json();
                     }).catch(function(e) {
