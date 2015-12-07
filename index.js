@@ -4,11 +4,12 @@ var Promise = require('bluebird');
 var JuttleMoment = require('juttle/lib/moment').JuttleMoment;
 var Juttle = require('juttle/lib/runtime').Juttle;
 
-global.Promise = Promise;
-var fetch = require('isomorphic-fetch');
+var request = require('request-promise');
 
 var Serializer = require('./lib/serializer');
 var QueryBuilder = require('./lib/query');
+
+var logger = require('juttle/lib/logger').getLogger('influx-backend');
 
 var config;
 
@@ -51,7 +52,8 @@ var Write = Juttle.proc.sink.extend({
             }
         })).join("\n");
 
-        return fetch(reqUrl, {
+        return request({
+            url: reqUrl,
             method: 'post',
             body: body
         }).then(function(response) {
@@ -91,7 +93,7 @@ var Read = Juttle.proc.base.extend({
 
         this.queryBuilder = new QueryBuilder();
         this.queryOptions = _.defaults(
-            _.pick(options, 'measurements', 'offset', 'limit', 'fields'),
+            _.pick(options, 'db', 'measurements', 'offset', 'limit', 'fields'),
             {
                 limit: 1000,
             }
@@ -99,6 +101,9 @@ var Read = Juttle.proc.base.extend({
         this.queryFilter  = params;
 
         this.raw = options.raw;
+        this.version = config.version || 0.9;
+
+        logger.info('initializing version', this.version);
     },
 
     start: function() {
@@ -106,7 +111,8 @@ var Read = Juttle.proc.base.extend({
 
         return this.fetch()
         .then(function(data) {
-            self.emit(self.parse(data));
+            var points = self.parse(data);
+            self.emit(points);
             self.emit_eof();
         }).catch(function(err) {
             self.trigger('error', err);
@@ -137,6 +143,19 @@ var Read = Juttle.proc.base.extend({
     },
 
     parse: function(data) {
+        // XXX big ol hack
+        if (this.version === 0.8) {
+            data = {
+                results: [
+                    {
+                        series: _.map(data, function(d) {
+                            return {name: d.name, columns: d.columns, values: d.points};
+                        })
+                    }
+                ]
+            };
+        }
+
         var e  = _.find(data.results, 'error');
 
         if (e && e.error) {
@@ -163,7 +182,11 @@ var Read = Juttle.proc.base.extend({
 
         var query = this.raw ? this.raw : this.queryBuilder.build(this.queryOptions, this.queryFilter);
 
-        _.extend(parsedUrl, { pathname: '/query', query: { 'q': query, 'db': this.db, 'epoch' : 'ms' } });
+        if (this.version >= 0.9) {
+            _.extend(parsedUrl, { pathname: '/query', query: { 'q': query, 'db': this.db, 'epoch' : 'ms' } });
+        } else if (this.version === 0.8) {
+            _.extend(parsedUrl, { pathname: '/db/' + this.db + '/series', query: { 'q': query, 'epoch' : 'ms', } });
+        }
 
         reqUrl = url.format(parsedUrl);
 
@@ -172,15 +195,17 @@ var Read = Juttle.proc.base.extend({
                 { url: reqUrl }
             ));
         } else {
-            return fetch(reqUrl)
-                .then(function(response) {
-                    if (response.status < 200 || response.status >= 300) {
-                        throw new Error(response.status + ': ' + response.statusText + ' for ' + reqUrl);
-                    }
-                    return response.json();
-                }).catch(function(e) {
-                    throw e;
-                });
+            var opts = {
+                url: reqUrl,
+                json: true
+            };
+            if (config.user && config.password) {
+                opts.auth = {
+                    user: config.user,
+                    password: config.password
+                }
+            }
+            return request(opts);
         }
     },
 });

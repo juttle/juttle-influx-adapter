@@ -3,17 +3,14 @@ var expect = require('chai').expect;
 var url = require('url');
 var retry = require('bluebird-retry');
 
-var Promise = require('bluebird');
-global.Promise = Promise;
-
-var fetch = require('isomorphic-fetch');
+var request = require('request-promise');
 
 var juttle_test_utils = require('juttle/test/runtime/specs/juttle-test-utils');
 var check_juttle = juttle_test_utils.check_juttle;
 
 var influxdb = require('../index.js');
 
-var influx_api_url = url.parse('http://localhost:8086/');
+var influx_api_url = url.parse(process.env.INFLUXDB_URL || 'http://localhost:8086/');
 var retry_options = { interval: 50, timeout: 250 };
 
 
@@ -32,21 +29,21 @@ var DB = {
 
     drop: function() {
         var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { 'q': 'DROP DATABASE test' } });
-        return fetch(url.format(requestUrl)).then(this._handle_response).catch(function(e) {
+        return request(url.format(requestUrl)).then(this._handle_response).catch(function(e) {
            throw e;
         });
     },
 
     create: function() {
         var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { 'q': 'CREATE DATABASE test' } });
-        return fetch(url.format(requestUrl)).then(this._handle_response).catch(function(e) {
+        return request(url.format(requestUrl)).then(this._handle_response).catch(function(e) {
             throw e;
         });
     },
 
     query: function(q) {
         var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { 'q': q, 'db': 'test' } });
-        return fetch(url.format(requestUrl)).then(function(r) {
+        return request(url.format(requestUrl)).then(function(r) {
            return r.json();
         }).catch(function(e) {
             throw e;
@@ -62,7 +59,7 @@ var DB = {
             payload += 'cpu,host=host' + i + ' value=' + i + ' ' + t + '\n';
         }
 
-        return fetch(url.format(requestUrl), {
+        return request(url.format(requestUrl), {
             method: 'post',
             body: payload
         }).then(this._handle_response).catch(function(e) {

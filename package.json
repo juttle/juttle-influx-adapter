@@ -17,9 +17,9 @@
   },
   "homepage": "https://github.com/juttle/juttle-influxdb-backend",
   "dependencies": {
-    "glob-to-regexp": "^0.1.0",
     "bluebird": "^3.0.5",
-    "isomorphic-fetch": "^2.2.0",
+    "glob-to-regexp": "^0.1.0",
+    "request-promise": "^1.0.2",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
@@ -29,7 +29,7 @@
     "bluebird-retry": "^0.5.2"
   },
   "engines": {
-      "node": ">=0.10.40",
-      "npm": ">=2.1.6"
+    "node": ">=0.10.40",
+    "npm": ">=2.1.6"
   }
 }
