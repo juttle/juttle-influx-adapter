@@ -1,5 +1,6 @@
 var expect = require('chai').expect;
 var parser = require('juttle/lib/parser');
+var JuttleMoment = require('juttle/lib/moment').JuttleMoment;
 var QueryBuilder = require('../../lib/query');
 
 describe('influxql query building', function() {
@@ -105,6 +106,27 @@ describe('influxql query building', function() {
             it('handles compound ops', function() {
                 var ast0 = parser.parseFilter('key1 = "val1" and key1 = "val2" or key1 = "val3"');
                 expect(builder.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = \'val1\' AND "key1" = \'val2\') OR "key1" = \'val3\'');
+            });
+
+            it('handles from', function() {
+                expect(builder.build({}, {
+                    from: new JuttleMoment('2015-01-01T00:00:00.000Z')
+                })).to.equal('SELECT * FROM /.*/ WHERE time > \'2014-12-31 23:59:59.999\'')
+            });
+
+            it('handles from and to', function() {
+                expect(builder.build({}, {
+                    from: new JuttleMoment('2015-01-01T00:00:00.000Z'),
+                    to:   new JuttleMoment('2015-01-01T00:01:00.000Z')
+                })).to.equal('SELECT * FROM /.*/ WHERE time > \'2014-12-31 23:59:59.999\' AND time < \'2015-01-01 00:01:00.000\'');
+            });
+
+            it('handles from and to with a filter', function() {
+                expect(builder.build({}, {
+                    from: new JuttleMoment('2015-01-01T00:00:00.000Z'),
+                    to:   new JuttleMoment('2015-01-01T00:01:00.000Z'),
+                    filter_ast: parser.parseFilter('key = 1')
+                })).to.equal('SELECT * FROM /.*/ WHERE time > \'2014-12-31 23:59:59.999\' AND time < \'2015-01-01 00:01:00.000\' AND "key" = 1');
             });
 
             describe('NOT', function() {

@@ -86,7 +86,10 @@ var Read = Juttle.proc.base.extend({
             'offset',
             'limit',
             'fields',
-            'measurementField'
+            'measurementField',
+            'last',
+            'from',
+            'to'
         ];
         var unknown = _.difference(_.keys(options), allowed_options);
 
@@ -100,18 +103,43 @@ var Read = Juttle.proc.base.extend({
         this.db = options.db;
 
         this.queryBuilder = new QueryBuilder();
+        this._setup_time_filter(options);
         this.queryOptions = _.defaults(
-            _.pick(options, 'db', 'measurements', 'offset', 'limit', 'fields'),
-            {
-                limit: 1000,
-            }
+            _.pick(options, 'db', 'measurements', 'offset', 'limit', 'fields')
         );
+
+        if (! ((this.from && this.to) || this.queryOptions.limit)) {
+            this.queryOptions.limit = 1000;
+        }
+
         this.queryFilter  = params;
 
         this.raw = options.raw;
         this.version = config.version || 0.9;
 
         logger.info('initializing version', this.version);
+    },
+
+    // XXX/demmer this should be in a common backend read base class
+    _setup_time_filter: function(options) {
+        this.now = this.program.now;
+
+        if (options.last) {
+            if (options.to || options.from) {
+                throw new Error('-last option must not be combined with -from or -to');
+            }
+            this.to = this.now;
+            this.from = this.to.subtract(options.last);
+        } else if (options.from && options.to) {
+            this.from = options.from;
+            this.to = options.to;
+        } else if (options.from || options.to) {
+            throw new Error('-from and -to must be used together');
+        } else {
+//            throw new Error('-from/-to or -last time filter required');
+        }
+        
+        console.log("ZZZ", this.from.toJSON(), this.to.toJSON());
     },
 
     start: function() {
@@ -188,6 +216,9 @@ var Read = Juttle.proc.base.extend({
         var parsedUrl = url.parse(this.url);
         var reqUrl;
 
+        this.queryFilter.from = this.from;
+        this.queryFilter.to    = this.to;
+
         var query = this.raw ? this.raw : this.queryBuilder.build(this.queryOptions, this.queryFilter);
 
         if (this.version >= 0.9) {
@@ -196,6 +227,7 @@ var Read = Juttle.proc.base.extend({
             _.extend(parsedUrl, { pathname: '/db/' + this.db + '/series', query: { 'q': query, 'epoch' : 'ms', } });
         }
 
+        logger.info('sending query', query);
         reqUrl = url.format(parsedUrl);
 
         if (!parsedUrl.host) {
