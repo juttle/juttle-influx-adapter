@@ -79,7 +79,15 @@ var Read = Juttle.proc.base.extend({
     procName: 'read-influxdb',
 
     initialize: function(options, params, pname, location, program, juttle) {
-        var allowed_options = ['raw', 'db', 'measurements', 'offset', 'limit', 'fields', 'measurementField'];
+        var allowed_options = [
+            'raw',
+            'db',
+            'measurements',
+            'offset',
+            'limit',
+            'fields',
+            'measurementField'
+        ];
         var unknown = _.difference(_.keys(options), allowed_options);
 
         if (unknown.length > 0) {
