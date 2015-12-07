@@ -142,7 +142,7 @@ describe('influxql query building', function() {
             describe('NOT', function() {
                 it('in', function() {
                     var ast = parser.parseFilter('not (key1 in ["val1", "val2"])');
-                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != \'val1\' AND "key1" != \'val2\'');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" <> \'val1\' AND "key1" <> \'val2\'');
                 });
 
                 it('>', function() {
@@ -157,7 +157,7 @@ describe('influxql query building', function() {
 
                 it('=', function() {
                     var ast = parser.parseFilter('not (key1 = 1)');
-                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" <> 1');
                 });
 
                 it('=~', function() {
@@ -167,12 +167,12 @@ describe('influxql query building', function() {
 
                 it('AND implicit', function() {
                     var ast = parser.parseFilter('not (key1 = 1 key2 = 2)');
-                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1 OR "key2" != 2');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" <> 1 OR "key2" <> 2');
                 });
 
                 it('AND explicit', function() {
                     var ast = parser.parseFilter('not (key1 = 1 and key2 = 2)');
-                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1 OR "key2" != 2');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" <> 1 OR "key2" <> 2');
                 });
 
                 it('AND explicit inequalities', function() {
@@ -182,7 +182,7 @@ describe('influxql query building', function() {
 
                 it('OR', function() {
                     var ast = parser.parseFilter('not (key1 = 1 OR key2 = 2)');
-                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1 AND "key2" != 2');
+                    expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" <> 1 AND "key2" <> 2');
                 });
             });
 
