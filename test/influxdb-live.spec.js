@@ -315,7 +315,7 @@ describe('@live influxdb tests', function () {
                 return retry(function() {
                     return DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
                         var data = json.results[0].series[0];
-                        expect(data.values[0][0]).to.equal(t.toISOString());
+                        expect(new Date(data.values[0][0]).toISOString()).to.equal(t.toISOString());
                         expect(data.values[0][1]).to.equal("host0");
                         expect(data.values[0][2]).to.equal(0);
                     });
