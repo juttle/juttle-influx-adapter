@@ -100,21 +100,25 @@ describe('serialization', function() {
             expect(serializer.toInflux(point)).to.equal('m,tag=one,another=two num=1.1');
         });
 
-        it('serializes timestamp with nanosecond precision', function() {
-            var now = new JuttleMoment(Date.now());
+        it('serializes timestamp with milisecond precision', function() {
+            var now = new JuttleMoment(Date.now() / 1000);
             var point = { num: 1.1, time: now, _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m num=1.1 ' + now.unixms() + '000000');
+            expect(serializer.toInflux(point)).to.equal('m num=1.1 ' + now.unixms());
         });
 
         it('serializes time as unix timestamps with milisecond precision', function() {
-            var x = Date.now();
-            var point = { start: new JuttleMoment(x), end: new JuttleMoment(x + 10), _measurement: 'm' };
+            var t = Date.now();
 
-            var vals = serializer.toInflux(point).split(' ')[1];
-            var end  = vals.split(',')[1];
-            var t    = end.split('=')[1];
+            var start = new JuttleMoment(t / 1000);
+            var end   = new JuttleMoment(t / 1000 + 10);
 
-            expect(t).to.equal((x + 10) + '');
+            var point = { start: start, end: end, _measurement: 'm' };
+
+            var vals   = serializer.toInflux(point).split(' ')[1];
+            var endstr = vals.split(',')[1];
+            var t      = endstr.split('=')[1];
+
+            expect(t).to.equal(end.unixms() + '');
         });
 
         it('serializes boolean values', function() {
