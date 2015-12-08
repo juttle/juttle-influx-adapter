@@ -37,7 +37,7 @@ var Write = Juttle.proc.sink.extend({
         var parsedUrl = url.parse(this.url);
         var reqUrl;
 
-        _.extend(parsedUrl, { pathname: '/write', query: { 'db': this.db, 'epoch' : 'ms', } });
+        _.extend(parsedUrl, { pathname: '/write', query: { 'db': this.db, 'precision' : 'ms', } });
 
         reqUrl = url.format(parsedUrl);
 
