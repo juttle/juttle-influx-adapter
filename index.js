@@ -77,11 +77,15 @@ var Read = Juttle.proc.base.extend({
     procName: 'read-influxdb',
 
     initialize: function(options, params, pname, location, program, juttle) {
-        var allowed_options = ['raw', 'db', 'measurements', 'offset', 'limit', 'fields', 'measurementField'];
+        var allowed_options = ['raw', 'db', 'measurements', 'offset', 'limit', 'fields', 'measurementField', 'from', 'to'];
         var unknown = _.difference(_.keys(options), allowed_options);
 
         if (unknown.length > 0) {
             throw new Error('Unknown option ' + unknown[0]);
+        }
+
+        if (options.from && options.to && JuttleMoment.compare('>', options.from, options.to)) {
+            throw new Error('From cannot be before to');
         }
 
         this.serializer = new Serializer(_.pick(options, 'measurementField'));
@@ -91,7 +95,7 @@ var Read = Juttle.proc.base.extend({
 
         this.queryBuilder = new QueryBuilder();
         this.queryOptions = _.defaults(
-            _.pick(options, 'measurements', 'offset', 'limit', 'fields'),
+            _.pick(options, 'measurements', 'offset', 'limit', 'fields', 'from', 'to'),
             {
                 limit: 1000,
             }
