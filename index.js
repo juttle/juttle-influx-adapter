@@ -89,7 +89,9 @@ var Read = Juttle.proc.base.extend({
             'measurementField',
             'last',
             'from',
-            'to'
+            'to',
+            'every',
+            'lag'
         ];
         var unknown = _.difference(_.keys(options), allowed_options);
 
@@ -103,6 +105,8 @@ var Read = Juttle.proc.base.extend({
         this.db = options.db;
 
         this.queryBuilder = new QueryBuilder();
+        this.every = options.every || JuttleMoment.duration(1, 's');
+        this.lag = options.lag || JuttleMoment.duration(2, 's');
         this._setup_time_filter(options);
         this.queryOptions = _.defaults(
             _.pick(options, 'db', 'measurements', 'offset', 'limit', 'fields')
@@ -130,26 +134,40 @@ var Read = Juttle.proc.base.extend({
             }
             this.to = this.now;
             this.from = this.to.subtract(options.last);
-        } else if (options.from && options.to) {
-            this.from = options.from;
-            this.to = options.to;
-        } else if (options.from || options.to) {
-            throw new Error('-from and -to must be used together');
         } else {
-//            throw new Error('-from/-to or -last time filter required');
+            this.from = options.from || new JuttleMoment()
+            this.to = options.to;
+            if (! this.to) {
+                this.to = new JuttleMoment().subtract(this.lag);
+                this.live = true;
+            }
         }
-        
-        console.log("ZZZ", this.from.toJSON(), this.to.toJSON());
     },
 
     start: function() {
+        this.run();
+    },
+
+    run: function() {
+        logger.debug('running... from:', this.from.toJSON(), 'to:', this.to && this.to.toJSON());
+
         var self = this;
 
         return this.fetch()
         .then(function(data) {
             var points = self.parse(data);
+            logger.debug('got', points.length, 'points')
             self.emit(points);
-            self.emit_eof();
+
+            if (! self.live) {
+                logger.debug('-to specified, emitting eof')
+                self.emit_eof();
+            } else {
+                self.from = self.to;
+                self.to = self.to.add(self.every)
+                logger.debug('advanced -to', self.to, 'sleeping')
+                self.program.scheduler.schedule(self.to.add(self.lag).unixms(), function() { self.run(); });
+            }
         }).catch(function(err) {
             self.trigger('error', err);
             self.logOnce('error', err.message);
