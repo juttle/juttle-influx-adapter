@@ -11,7 +11,7 @@
     "url": "http://github.com/juttle/juttle-influxdb-backend"
   },
   "author": "Balazs Kutil <balazs@jut.io>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/juttle/juttle-influxdb-backend/issues"
   },
