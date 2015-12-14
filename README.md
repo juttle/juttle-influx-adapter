@@ -1,30 +1,49 @@
 # InfluxDB Backend for Juttle
 
-[![Build Status](https://travis-ci.com/juttle/influxdb-backend.svg?token=C2AjzxBQoVUrmWXFQb7w)](https://travis-ci.com/juttle/influxdb-backend)
+[![Build Status](https://travis-ci.com/juttle/juttle-influx-backend.svg?token=C2AjzxBQoVUrmWXFQb7w)](https://travis-ci.com/juttle/juttle-influx-backend)
 
 ## About
 
-This package provides a pluggable InfluxDB backend for Juttle data flow
-language. It supports querying data stored in Influx (large part of InfluxQL
-SELECT syntax is accessible through options and raw mode is also available as a
-fallback). As for writing, it can store arbitrary non-nested data (shallow
-objects).
+InfluxDB backend for the [Juttle data flow
+language](https://github.com/juttle/juttle), with read & write support.
+
+Large part of InfluxQL SELECT syntax is accessible through options and raw mode
+is also available as a fallback.
 
 Currently, only InfluxDB 0.9.0 and newer, JSON (reading) and line protocol
 over HTTP (writing) is supported.
 
+### Examples:
+
+Display all entries from the `cpu` measurement:
+
+```bash
+$ juttle -e 'read influxdb -db "test" -measurements "cpu" | view logger'
+```
+
+Write a single point into the `cpu` measurement:
+
+```bash
+$ juttle -e 'emit -points [{ "value": 0.01 }] | write influxdb -db "test" -measurement "cpu"
+```
+
 ## Installation
 
-This assumes you have Juttle already installed. You can test that by running:
+The backend needs to be installed in the same directory as [juttle package](https://www.npmjs.com/package/juttle):
 
-    $ npm ls -g | grep juttle
+1. Create an empty directory
 
-if the output contains `juttle`, you're good to go.  Alternatively, go to
-[Juttle repository]() and follow the installation instructions.
+```bash
+$ mkdir -p my_project
+$ cd my_project
+```
 
-Then install the backend package:
+2. Install juttle package and the backend:
 
-    npm install -g juttle-influxdb-backend
+```bash
+$ npm install juttle
+$ npm install juttle-influx-backend
+```
 
 ## Configuration
 
@@ -43,24 +62,13 @@ within Juttle. To do so, add the following to your `~/.juttle/config.json` file:
 
 The URL points to the API url of your InfluxDB database.
 
-FIXME: authentication support.
-
 ## Usage
-
-FIXME: backends should support listing options
-
-    $ juttle -e 'readx influxdb -db "test"'
-
-Reads all points from the `test` database.
-
-    $ juttle -e 'emit -points [{"value": 0.01}] | writex influxdb -db "test" -measurement "cpu"
-
-Stores a single point in the `cpu` measurement of `test` database.
 
 When storing points, following conventions are used:
 
-1. All keys, whose values are strings, are treated as [tags](). You can always
-   override this behavior using `valueFields` option:
+1. All keys, whose values are strings, are treated as
+   [tags](https://influxdb.com/docs/v0.9/concepts/key_concepts.html#tag-key).
+   You can always override this behavior using `valueFields` option:
    `...|writex influxdb -valueFields "foo","bar"` will treat `foo` and `bar`
    as fields, not tags.
 
@@ -69,16 +77,31 @@ When storing points, following conventions are used:
 
 For more complex examples, please take a look at Juttle scripts in the [examples]().
 
+### Read options
+
+Name | Type | Required | Description
+-----|------|----------|-------------
+raw  | string | no  | send a raw InfluxQL query to InfluxDB
+db   | string | yes | database to use
+mesurements | array | no | measurements to query, defaults to `/.*/`, i.e. all measurements
+offset | integer| no | record offset
+limit  | integer | no | query limit, defaults to 10000 records
+measurementField | string | no | if specified, measurement name will be added to all points under this key
+from | Juttle moment | no | time of the first point selected
+to   | Juttle moment | no | time of the last point selected
+
+### Write options
+
+Name | Type | Required | Description
+-----|------|----------|-------------
+db   | string | yes | database to use
+intFields | array | no | these fields will be stored as integers, instead of floats (default: none)
+valFields | array | no | strings in these fields won't be stored as tags, but values
+measurement | string | yes | measurement to use (required, optional if points contain measurement field, specified by measurementField option)
+measurementField | string | no | points will be checked for this field and its value will be used as the measurement name
+
 ## Contributing
 
 Want to contribute? Awesome! We encourage everyone to contribute to Juttle and
-its backends.
-
-We put up a guide over here FIXME.
-
-To contribute to InfluxDB backend directly, please see this guide on how to get
-started.
-
-## License
-
-All files in this repository are licensed under [Apache 2.0 License](LICENSE).
+its backends. To contribute to InfluxDB backend, don't hesitate to file an
+issue or open a pull request.
