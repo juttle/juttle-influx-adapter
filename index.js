@@ -13,10 +13,10 @@ var QueryBuilder = require('./lib/query');
 var config;
 
 var Write = Juttle.proc.sink.extend({
-    procName: 'write-influxdb',
+    procName: 'write-influx',
 
     initialize: function(options, params) {
-        this.name = 'write-influxdb';
+        this.name = 'write-influx';
 
         var allowed_options = ['raw', 'db', 'intFields', 'valFields', 'measurementField', 'measurement'];
         var unknown = _.difference(_.keys(options), allowed_options);
@@ -74,7 +74,7 @@ var Write = Juttle.proc.sink.extend({
 
 var Read = Juttle.proc.source.extend({
     sourceType: 'batch',
-    procName: 'read-influxdb',
+    procName: 'read-influx',
 
     initialize: function(options, params, pname, location, program, juttle) {
         var allowed_options = ['raw', 'db', 'measurements', 'offset', 'limit', 'fields', 'measurementField', 'from', 'to'];
@@ -192,7 +192,7 @@ var Read = Juttle.proc.source.extend({
 function InfluxBackend(cfg) {
     config = cfg;
     return {
-        name: 'influxdb',
+        name: 'influx',
         read: Read,
         write: Write
     };
