@@ -24,6 +24,11 @@ Juttle.backends.register('influxdb', influxdb({
 
 /* DB utils */
 var DB = {
+    // Influx doesnt seem to like writing future points?
+    _t0: Date.now() - 3600 * 1000,
+    _points: 10,
+    _dt: 1000,
+
     _handle_response: function(response) {
         if (response.status !== 200 && response.status !== 204) {
             throw new Error(['error', response.status, response.statusText].join(' '));
@@ -55,10 +60,10 @@ var DB = {
 
     insert: function() {
         var payload = "";
-        var requestUrl = _.extend(influx_api_url, { pathname: '/write', query: { 'db': 'test' } });
+        var requestUrl = _.extend(influx_api_url, { pathname: '/write', query: { 'db': 'test', 'precision': 'ms' } });
 
-        for (var i = 0; i < 10; i++) {
-            var t = Date.now() * 1000 + i * 100;
+        for (var i = 0; i < this._points; i++) {
+            var t = this._t0 + i * this._dt;
             payload += 'cpu,host=host' + i + ' value=' + i + ' ' + t + '\n';
         }
 
@@ -102,6 +107,7 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'read influxdb -db "test" -measurements "cpu" | @logger'
             }).then(function(res) {
+                expect(res.sinks.logger.length).to.equal(10)
                 expect(res.sinks.logger[0].value).to.equal(0)
             });
         });
@@ -131,35 +137,41 @@ describe('@live influxdb tests', function () {
             });
         });
 
-        it.skip('from', function() {
+        it('from', function() {
+            var from = new Date(DB._t0 + 2 * DB._dt);
             return check_juttle({
-                program: 'read influxdb -db "test" -measurements "cpu" | keep @logger'
+                program: 'read influxdb -db "test" -measurements "cpu" -from :' + from.toISOString() + ': | @logger'
             }).then(function(res) {
-                expect(res.sinks.logger.length).to.equal(5);
+                expect(res.sinks.logger.length).to.equal(8);
             });
         });
 
-        it.skip('to', function() {
+        it('to', function() {
+            var to = new Date(DB._t0 + 2 * DB._dt);
             return check_juttle({
-                program: 'read influxdb -db "test" -measurements "cpu" | keep @logger'
+                program: 'read influxdb -db "test" -measurements "cpu" -to :' + to.toISOString() + ': | @logger'
             }).then(function(res) {
-                expect(res.sinks.logger.length).to.equal(5);
+                expect(res.sinks.logger.length).to.equal(2);
             });
         });
 
-        it.skip('from and to', function() {
+        it('from and to', function() {
+            var from = new Date(DB._t0 + 2 * DB._dt);
+            var to = new Date(DB._t0 + 5 * DB._dt);
             return check_juttle({
-                program: 'read influxdb -db "test" -measurements "cpu" | keep @logger'
+                program: 'read influxdb -db "test" -measurements "cpu" -from :' + from.toISOString() + ': -to :' + to.toISOString() + ': | @logger'
             }).then(function(res) {
-                expect(res.sinks.logger.length).to.equal(5);
+                expect(res.sinks.logger.length).to.equal(3);
             });
         });
 
-        it.skip('to before from', function() {
+        it('to before from throws', function() {
+            var from = new Date(DB._t0 + 5 * DB._dt);
+            var to = new Date(DB._t0 + 2 * DB._dt);
             return check_juttle({
-                program: 'read influxdb -db "test" -measurements "cpu" | keep @logger'
-            }).then(function(res) {
-                expect(res.sinks.logger.length).to.equal(5);
+                program: 'read influxdb -db "test" -measurements "cpu" -from :' + from.toISOString() + ': -to :' + to.toISOString() + ': | @logger'
+            }).catch(function(err) {
+                expect(err.message).to.include('From cannot be before to');
             });
         });
 
@@ -170,6 +182,7 @@ describe('@live influxdb tests', function () {
                 return check_juttle({
                     program: 'read influxdb -db "test" -measurements "cpu" host = "host1" | @logger'
                 }).then(function(res) {
+                    expect(res.sinks.logger.length).to.equal(1)
                     expect(res.sinks.logger[0].host).to.equal('host1');
                 });
             });
@@ -178,6 +191,7 @@ describe('@live influxdb tests', function () {
                 return check_juttle({
                     program: 'read influxdb -db "test" -measurements "cpu" value = 5 | @logger'
                 }).then(function(res) {
+                    expect(res.sinks.logger.length).to.equal(1)
                     expect(res.sinks.logger[0].value).to.equal(5);
                 });
             });
@@ -301,7 +315,7 @@ describe('@live influxdb tests', function () {
                 return retry(function() {
                     return DB.query('SELECT * FROM cpu WHERE value = 0').then(function(json) {
                         var data = json.results[0].series[0];
-                        expect(data.values[0][0]).to.equal(t.toISOString());
+                        expect(new Date(data.values[0][0]).toISOString()).to.equal(t.toISOString());
                         expect(data.values[0][1]).to.equal("host0");
                         expect(data.values[0][2]).to.equal(0);
                     });

@@ -1,6 +1,7 @@
 var expect = require('chai').expect;
 var parser = require('juttle/lib/parser');
 var QueryBuilder = require('../../lib/query');
+var JuttleMoment = require('juttle/lib/moment').JuttleMoment;
 
 describe('influxql query building', function() {
     var builder = new QueryBuilder();
@@ -163,6 +164,51 @@ describe('influxql query building', function() {
                 it('is not allowed as moment', function() {
                     var ast = parser.parseFilter('created_at > :now:');
                     expect(builder.build.bind(builder, {}, {filter_ast: ast})).to.throw(/Filtering by time is not supported/);
+                });
+            });
+
+            describe('to and from', function() {
+                var t1 = new Date(Date.now() - 3600 * 1000);
+                var t2 = new Date(Date.now());
+
+                var from = new JuttleMoment(t1);
+                var to = new JuttleMoment(t2);
+
+                it('is added into the query', function() {
+                    var ast = parser.parseFilter('key = 1');
+                    expect(builder.build({from: from, to: to}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
+                });
+
+                it('is added to empty filter', function() {
+                    expect(builder.build({from: from, to: to})).to.equal('SELECT * FROM /.*/ WHERE "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
+                });
+
+                it('is added to binary expr', function() {
+                    var ast = parser.parseFilter('key = 1 and key = 2');
+                    expect(builder.build({from: from, to: to}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "key" = 2 AND "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
+                });
+
+                it('is added to unary expr', function() {
+                    var ast = parser.parseFilter('not (key = 1)');
+                    expect(builder.build({from: from, to: to}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" != 1 AND "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
+                });
+
+                it('only from', function() {
+                    expect(builder.build({from: from})).to.equal('SELECT * FROM /.*/ WHERE "time" >= \'' + from.valueOf() + '\'');
+                });
+
+                it('only from and filter', function() {
+                    var ast = parser.parseFilter('key = 1');
+                    expect(builder.build({from: from}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "time" >= \'' + from.valueOf() + '\'');
+                });
+
+                it('only to', function() {
+                    expect(builder.build({to: to})).to.equal('SELECT * FROM /.*/ WHERE "time" < \'' + to.valueOf() + '\'');
+                });
+
+                it('only to and filter', function() {
+                    var ast = parser.parseFilter('key = 1');
+                    expect(builder.build({to: to}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "time" < \'' + to.valueOf() + '\'');
                 });
             });
         });
