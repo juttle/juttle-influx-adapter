@@ -189,7 +189,7 @@ var Read = Juttle.proc.source.extend({
     },
 });
 
-function InfluxBackend(cfg) {
+function InfluxAdapter(cfg) {
     config = cfg;
     return {
         name: 'influx',
@@ -198,4 +198,4 @@ function InfluxBackend(cfg) {
     };
 }
 
-module.exports = InfluxBackend;
+module.exports = InfluxAdapter;

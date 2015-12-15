@@ -18,7 +18,7 @@ var retry_options = { interval: 50, timeout: 250 };
 
 
 var Juttle = require('juttle/lib/runtime').Juttle;
-Juttle.backends.register('influx', influx({
+Juttle.adapters.register('influx', influx({
     url: url.format(influx_api_url)
 }, Juttle));
 

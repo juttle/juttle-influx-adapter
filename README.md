@@ -1,8 +1,8 @@
-# Juttle InfluxDB Backend
+# Juttle InfluxDB Adapter
 
-[![Build Status](https://travis-ci.com/juttle/juttle-influx-backend.svg?token=C2AjzxBQoVUrmWXFQb7w)](https://travis-ci.com/juttle/juttle-influx-backend)
+[![Build Status](https://travis-ci.com/juttle/juttle-influx-adapter.svg?token=C2AjzxBQoVUrmWXFQb7w)](https://travis-ci.com/juttle/juttle-influx-adapter)
 
-Juttle InfluxDB backend for the [Juttle data flow
+Juttle InfluxDB adapter for the [Juttle data flow
 language](https://github.com/juttle/juttle), with read & write support. Large
 part of InfluxQL SELECT syntax is accessible through options and raw mode is
 also available as a fallback.
@@ -25,23 +25,23 @@ emit -points [{ value: 0.01 }] | write influx -db 'test' -measurement 'cpu'
 
 ## Installation
 
-Like Juttle itself, the backend is installed as a npm package. Both Juttle and
-the backend need to be installed side-by-side:
+Like Juttle itself, the adapter is installed as a npm package. Both Juttle and
+the adapter need to be installed side-by-side:
 
 ```bash
 $ npm install juttle
-$ npm install juttle-influx-backend
+$ npm install juttle-influx-adapter
 ```
 
 ## Configuration
 
-The backend needs to be registered and configured so that it can be used from
+The adapter needs to be registered and configured so that it can be used from
 within Juttle. To do so, add the following to your `~/.juttle/config.json` file:
 
 ```json
 {
-    "backends": {
-        "influx-backend": {
+    "adapters": {
+        "influx-adapter": {
             "url": "http://localhost:8086/"
         }
     }
@@ -61,7 +61,7 @@ When storing points, the following conventions are used:
    `bar` as fields, not tags.
 
 2. InfluxDB distinguishes between integers and floating point numeric types. By
-   default, the backend stores all numeric fields as floats. This can be changed
+   default, the adapter stores all numeric fields as floats. This can be changed
    by enumerating the integer fields via `intFields` option.
 
 ### Read options
