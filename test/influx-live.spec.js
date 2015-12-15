@@ -96,7 +96,7 @@ describe('@live influxdb tests', function () {
 
         it('-raw option', function() {
             return check_juttle({
-                program: 'read influx -db "test" -raw "SELECT * FROM cpu" | @logger'
+                program: 'read influx -db "test" -raw "SELECT * FROM cpu" | view logger'
             }).then(function(res) {
                 expect(res.sinks.logger.length).to.equal(10)
                 expect(res.sinks.logger[0].value).to.equal(0)
@@ -105,7 +105,7 @@ describe('@live influxdb tests', function () {
 
         it('basic select', function() {
             return check_juttle({
-                program: 'read influx -db "test" -measurements "cpu" | @logger'
+                program: 'read influx -db "test" -measurements "cpu" | view logger'
             }).then(function(res) {
                 expect(res.sinks.logger.length).to.equal(10)
                 expect(res.sinks.logger[0].value).to.equal(0)
@@ -114,7 +114,7 @@ describe('@live influxdb tests', function () {
 
         it('limit', function() {
             return check_juttle({
-                program: 'read influx -db "test" -measurements "cpu" -limit 5 | @logger'
+                program: 'read influx -db "test" -measurements "cpu" -limit 5 | view logger'
             }).then(function(res) {
                 expect(res.sinks.logger.length).to.equal(5);
             });
@@ -122,7 +122,7 @@ describe('@live influxdb tests', function () {
 
         it('fields', function() {
             return check_juttle({
-                program: 'read influx -db "test" -measurements "cpu" -limit 1 -fields "value" | @logger'
+                program: 'read influx -db "test" -measurements "cpu" -limit 1 -fields "value" | view logger'
             }).then(function(res) {
                 expect(_.keys(res.sinks.logger[0])).to.deep.equal(['time', 'value']);
                 expect(res.sinks.logger[0].value).to.equal(0);
@@ -131,7 +131,7 @@ describe('@live influxdb tests', function () {
 
         it('fields reports error if values not included', function() {
             return check_juttle({
-                program: 'read influx -db "test" -measurements "cpu" -limit 1 -fields "host" | @logger'
+                program: 'read influx -db "test" -measurements "cpu" -limit 1 -fields "host" | view logger'
             }).then(function(res) {
                 expect(res.errors[0]).to.include('at least one field in select clause');
             });
@@ -140,7 +140,7 @@ describe('@live influxdb tests', function () {
         it('from', function() {
             var from = new Date(DB._t0 + 2 * DB._dt);
             return check_juttle({
-                program: 'read influx -db "test" -measurements "cpu" -from :' + from.toISOString() + ': | @logger'
+                program: 'read influx -db "test" -measurements "cpu" -from :' + from.toISOString() + ': | view logger'
             }).then(function(res) {
                 expect(res.sinks.logger.length).to.equal(8);
             });
@@ -149,7 +149,7 @@ describe('@live influxdb tests', function () {
         it('to', function() {
             var to = new Date(DB._t0 + 2 * DB._dt);
             return check_juttle({
-                program: 'read influx -db "test" -measurements "cpu" -to :' + to.toISOString() + ': | @logger'
+                program: 'read influx -db "test" -measurements "cpu" -to :' + to.toISOString() + ': | view logger'
             }).then(function(res) {
                 expect(res.sinks.logger.length).to.equal(2);
             });
@@ -159,7 +159,7 @@ describe('@live influxdb tests', function () {
             var from = new Date(DB._t0 + 2 * DB._dt);
             var to = new Date(DB._t0 + 5 * DB._dt);
             return check_juttle({
-                program: 'read influx -db "test" -measurements "cpu" -from :' + from.toISOString() + ': -to :' + to.toISOString() + ': | @logger'
+                program: 'read influx -db "test" -measurements "cpu" -from :' + from.toISOString() + ': -to :' + to.toISOString() + ': | view logger'
             }).then(function(res) {
                 expect(res.sinks.logger.length).to.equal(3);
             });
@@ -169,7 +169,7 @@ describe('@live influxdb tests', function () {
             var from = new Date(DB._t0 + 5 * DB._dt);
             var to = new Date(DB._t0 + 2 * DB._dt);
             return check_juttle({
-                program: 'read influx -db "test" -measurements "cpu" -from :' + from.toISOString() + ': -to :' + to.toISOString() + ': | @logger'
+                program: 'read influx -db "test" -measurements "cpu" -from :' + from.toISOString() + ': -to :' + to.toISOString() + ': | view logger'
             }).catch(function(err) {
                 expect(err.message).to.include('From cannot be before to');
             });
@@ -180,7 +180,7 @@ describe('@live influxdb tests', function () {
         describe('filters', function() {
             it('on tags', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -measurements "cpu" host = "host1" | @logger'
+                    program: 'read influx -db "test" -measurements "cpu" host = "host1" | view logger'
                 }).then(function(res) {
                     expect(res.sinks.logger.length).to.equal(1)
                     expect(res.sinks.logger[0].host).to.equal('host1');
@@ -189,7 +189,7 @@ describe('@live influxdb tests', function () {
 
             it('on values', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -measurements "cpu" value = 5 | @logger'
+                    program: 'read influx -db "test" -measurements "cpu" value = 5 | view logger'
                 }).then(function(res) {
                     expect(res.sinks.logger.length).to.equal(1)
                     expect(res.sinks.logger[0].value).to.equal(5);
@@ -198,7 +198,7 @@ describe('@live influxdb tests', function () {
 
             it('inequality on values', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -measurements "cpu" value > 8 | @logger'
+                    program: 'read influx -db "test" -measurements "cpu" value > 8 | view logger'
                 }).then(function(res) {
                     expect(res.sinks.logger.length).to.equal(1);
                     expect(res.sinks.logger[0].value).to.equal(9);
@@ -207,7 +207,7 @@ describe('@live influxdb tests', function () {
 
             it('compound on tags', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -measurements "cpu" host = "host9" or host = "host1" | @logger'
+                    program: 'read influx -db "test" -measurements "cpu" host = "host9" or host = "host1" | view logger'
                 }).then(function(res) {
                     expect(res.sinks.logger.length).to.equal(2);
                     expect(res.sinks.logger[0].host).to.equal('host1');
@@ -217,7 +217,7 @@ describe('@live influxdb tests', function () {
 
             it('compound on values', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -measurements "cpu" value = 1 or value = 5 | @logger'
+                    program: 'read influx -db "test" -measurements "cpu" value = 1 or value = 5 | view logger'
                 }).then(function(res) {
                     expect(res.sinks.logger.length).to.equal(2);
                     expect(res.sinks.logger[0].value).to.equal(1);
@@ -228,7 +228,7 @@ describe('@live influxdb tests', function () {
             // Possibly bug in Influx, this actually returns all records
             it.skip('compound on tags and values', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -measurements "cpu" value = 1 or host = "host5" | @logger'
+                    program: 'read influx -db "test" -measurements "cpu" value = 1 or host = "host5" | view logger'
                 }).then(function(res) {
                     expect(res.sinks.logger.length).to.equal(2);
                     expect(res.sinks.logger[0].value).to.equal(1);
@@ -238,7 +238,7 @@ describe('@live influxdb tests', function () {
 
             it('not operator', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -measurements "cpu" not ( value < 5 or value > 5 ) | @logger'
+                    program: 'read influx -db "test" -measurements "cpu" not ( value < 5 or value > 5 ) | view logger'
                 }).then(function(res) {
                     expect(res.sinks.logger.length).to.equal(1);
                     expect(res.sinks.logger[0].value).to.equal(5);
@@ -247,7 +247,7 @@ describe('@live influxdb tests', function () {
 
             it('in operator', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -measurements "cpu" value in [1, 5] | @logger'
+                    program: 'read influx -db "test" -measurements "cpu" value in [1, 5] | view logger'
                 }).then(function(res) {
                     expect(res.sinks.logger.length).to.equal(2);
                     expect(res.sinks.logger[0].value).to.equal(1);
@@ -257,7 +257,7 @@ describe('@live influxdb tests', function () {
 
             it('not in', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -measurements "cpu" not ( value in [0, 1, 2, 3, 4] ) | @logger'
+                    program: 'read influx -db "test" -measurements "cpu" not ( value in [0, 1, 2, 3, 4] ) | view logger'
                 }).then(function(res) {
                     expect(res.sinks.logger.length).to.equal(5);
                     expect(res.sinks.logger[0].value).to.equal(5);
@@ -268,7 +268,7 @@ describe('@live influxdb tests', function () {
         describe('measurement', function() {
             it('stored in field specified by measurementField option', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -measurementField "measurement" -measurements "cpu" -limit 1 | @logger'
+                    program: 'read influx -db "test" -measurementField "measurement" -measurements "cpu" -limit 1 | view logger'
                 }).then(function(res) {
                     expect(res.sinks.logger[0].measurement).to.equal('cpu');
                 });
