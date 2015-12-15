@@ -46,7 +46,6 @@ var Write = Juttle.proc.sink.extend({
                 return self.serializer.toInflux(p);
             } catch(err) {
                 self.trigger('warning', err);
-                self.logOnce('error', err.message);
                 return null;
             }
         })).join("\n");
@@ -66,7 +65,6 @@ var Write = Juttle.proc.sink.extend({
             }
         }).catch(function(err) {
             self.trigger('error', err);
-            self.logOnce('error', err.message);
             self.done();
         });
     }
@@ -114,7 +112,6 @@ var Read = Juttle.proc.source.extend({
             self.emit_eof();
         }).catch(function(err) {
             self.trigger('error', err);
-            self.logOnce('error', err.message);
             self.emit_eof();
         });
     },
