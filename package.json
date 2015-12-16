@@ -2,6 +2,7 @@
   "name": "juttle-influx-adapter",
   "version": "0.1.0",
   "description": "Juttle adapter for InfluxDB",
+  "keywords": ["juttle", "adapter", "influxdb"],
   "homepage": "https://github.com/juttle/juttle-influx-adapter",
   "bugs": {
     "url": "https://github.com/juttle/juttle-influx-adapter/issues"
