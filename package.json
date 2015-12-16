@@ -4,16 +4,11 @@
   "description": "Juttle adapter for InfluxDB",
   "keywords": ["juttle", "adapter", "influxdb"],
   "homepage": "https://github.com/juttle/juttle-influx-adapter",
-  "bugs": {
-    "url": "https://github.com/juttle/juttle-influx-adapter/issues"
-  },
+  "bugs": "https://github.com/juttle/juttle-influx-adapter/issues",
   "license": "Apache-2.0",
   "author": "Balazs Kutil <balazs@jut.io>",
   "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "http://github.com/juttle/juttle-influx-adapter"
-  },
+  "repository": "juttle/juttle-influx-adapter",
   "scripts": {
     "test": "mocha"
   },
