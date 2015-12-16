@@ -2,20 +2,20 @@
   "name": "juttle-influx-adapter",
   "version": "0.1.0",
   "description": "Juttle adapter for InfluxDB",
-  "main": "index.js",
-  "scripts": {
-    "test": "mocha"
+  "homepage": "https://github.com/juttle/juttle-influx-adapter",
+  "bugs": {
+    "url": "https://github.com/juttle/juttle-influx-adapter/issues"
   },
+  "license": "Apache-2.0",
+  "author": "Balazs Kutil <balazs@jut.io>",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "http://github.com/juttle/juttle-influx-adapter"
   },
-  "author": "Balazs Kutil <balazs@jut.io>",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/juttle/juttle-influx-adapter/issues"
+  "scripts": {
+    "test": "mocha"
   },
-  "homepage": "https://github.com/juttle/juttle-influx-adapter",
   "dependencies": {
     "glob-to-regexp": "^0.1.0",
     "bluebird": "^3.0.5",
