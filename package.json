@@ -6,7 +6,6 @@
   "homepage": "https://github.com/juttle/juttle-influx-adapter",
   "bugs": "https://github.com/juttle/juttle-influx-adapter/issues",
   "license": "Apache-2.0",
-  "author": "Balazs Kutil <balazs@jut.io>",
   "main": "index.js",
   "repository": "juttle/juttle-influx-adapter",
   "scripts": {
