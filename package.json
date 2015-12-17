@@ -15,6 +15,7 @@
     "glob-to-regexp": "^0.1.0",
     "bluebird": "^3.0.5",
     "request": "^2.44.0",
+    "continuation-local-storage": "~3",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
@@ -24,7 +25,7 @@
     "bluebird-retry": "^0.5.2"
   },
   "engines": {
-    "node": ">=0.10.40",
-    "npm": ">=2.1.6"
+    "node": ">=4.2.0",
+    "npm": ">=2.14.7"
   }
 }
