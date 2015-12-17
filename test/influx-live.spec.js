@@ -1,12 +1,12 @@
 var _ = require('underscore');
 var expect = require('chai').expect;
 var url = require('url');
-var retry = require('bluebird-retry');
 
 var Promise = require('bluebird');
-global.Promise = Promise;
+var retry = require('bluebird-retry');
 
-var fetch = require('isomorphic-fetch');
+var request = Promise.promisifyAll(require('request'));
+request.async = Promise.promisify(request);
 
 var juttle_test_utils = require('juttle/test/runtime/specs/juttle-test-utils');
 var check_juttle = juttle_test_utils.check_juttle;
@@ -30,32 +30,26 @@ var DB = {
     _dt: 1000,
 
     _handle_response: function(response) {
-        if (response.status !== 200 && response.status !== 204) {
-            throw new Error(['error', response.status, response.statusText].join(' '));
+        if (response.statusCode !== 200 && response.statusCode !== 204) {
+            throw new Error(['error', response.statusCode, response.body].join(' '));
         }
-    },
 
-    drop: function() {
-        var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { 'q': 'DROP DATABASE test' } });
-        return fetch(url.format(requestUrl)).then(this._handle_response).catch(function(e) {
-           throw e;
-        });
-    },
-
-    create: function() {
-        var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { 'q': 'CREATE DATABASE test' } });
-        return fetch(url.format(requestUrl)).then(this._handle_response).catch(function(e) {
-            throw e;
-        });
+        return response.body === "" ? null : JSON.parse(response.body);
     },
 
     query: function(q) {
         var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { 'q': q, 'db': 'test' } });
-        return fetch(url.format(requestUrl)).then(function(r) {
-           return r.json();
-        }).catch(function(e) {
+        return request.async({url: url.format(requestUrl), method: 'GET' }).then(this._handle_response).catch(function(e) {
             throw e;
         });
+    },
+
+    create: function() {
+        return this.query('CREATE DATABASE test');
+    },
+
+    drop: function() {
+        return this.query('DROP DATABASE test');
     },
 
     insert: function() {
@@ -67,8 +61,9 @@ var DB = {
             payload += 'cpu,host=host' + i + ' value=' + i + ' ' + t + '\n';
         }
 
-        return fetch(url.format(requestUrl), {
-            method: 'post',
+        return request.async({
+            url: url.format(requestUrl),
+            method: 'POST',
             body: payload
         }).then(this._handle_response).catch(function(e) {
             throw e;
@@ -283,6 +278,14 @@ describe('@live influxdb tests', function () {
 
         afterEach(function(done) {
             DB.drop().finally(done);
+        });
+
+        it('reports error on write to nonexistent db', function() {
+            return check_juttle({
+                program: 'emit -points [{"host":"host0","value":0}] | write influx -db "doesnt_exist" -measurement "cpu"'
+            }).then(function(res) {
+                expect(res.errors[0]).to.include('database not found');
+            });
         });
 
         it('reports warning without measurement', function() {

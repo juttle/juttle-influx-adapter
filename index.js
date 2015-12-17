@@ -4,13 +4,13 @@ var Promise = require('bluebird');
 var JuttleMoment = require('juttle/lib/moment').JuttleMoment;
 var Juttle = require('juttle/lib/runtime').Juttle;
 
-global.Promise = Promise;
-var fetch = require('isomorphic-fetch');
-
 var Serializer = require('./lib/serializer');
 var QueryBuilder = require('./lib/query');
 
-var config;
+var request = Promise.promisifyAll(require('request'));
+request.async = Promise.promisify(request);
+
+var config = {};
 
 var Write = Juttle.proc.sink.extend({
     procName: 'write-influx',
@@ -50,16 +50,17 @@ var Write = Juttle.proc.sink.extend({
             }
         })).join("\n");
 
-        return fetch(reqUrl, {
-            method: 'post',
+        return request.async({
+            url: reqUrl,
+            method: 'POST',
             body: body
         }).then(function(response) {
             // https://influxdb.com/docs/v0.9/guides/writing_data.html#writing-data-using-the-http-api
             // section http response summary
-            if (response.status === 200) {
-                throw new Error(response.text());
-            } else if (response.status > 300) {
-                throw new Error(response.text());
+            if (response.statusCode === 200) {
+                throw new Error(response.body);
+            } else if (response.statusCode > 300) {
+                throw new Error(response.body);
             } else {
                 self.done();
             }
@@ -160,7 +161,7 @@ var Read = Juttle.proc.source.extend({
     fetch: function() {
         var self = this;
         var parsedUrl = url.parse(this.url);
-        var reqUrl;
+        var reqUrl = null;
 
         var query = this.raw ? this.raw : this.queryBuilder.build(this.queryOptions, this.queryFilter);
 
@@ -173,12 +174,14 @@ var Read = Juttle.proc.source.extend({
                 { url: reqUrl }
             ));
         } else {
-            return fetch(reqUrl)
-                .then(function(response) {
-                    if (response.status < 200 || response.status >= 300) {
-                        throw new Error(response.status + ': ' + response.statusText + ' for ' + reqUrl);
+            return request.async({
+                    url: reqUrl,
+                    method: 'GET'
+                }).then(function(response) {
+                    if (response.statusCode < 200 || response.statusCode >= 300) {
+                        throw new Error(response.statusCode + ': ' + response.body + ' for ' + reqUrl);
                     }
-                    return response.json();
+                    return JSON.parse(response.body);
                 }).catch(function(e) {
                     throw e;
                 });
