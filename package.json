@@ -15,6 +15,7 @@
     "glob-to-regexp": "^0.1.0",
     "bluebird": "^3.0.5",
     "request": "^2.44.0",
+    "continuation-local-storage": "~3",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
