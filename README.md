@@ -1,6 +1,6 @@
 # Juttle InfluxDB Adapter
 
-[![Build Status](https://travis-ci.com/juttle/juttle-influx-adapter.svg?token=C2AjzxBQoVUrmWXFQb7w)](https://travis-ci.com/juttle/juttle-influx-adapter)
+[![Build Status](https://travis-ci.org/juttle/juttle-influx-adapter.svg)](https://travis-ci.org/juttle/juttle-influx-adapter)
 
 InfluxDB adapter for the [Juttle data flow
 language](https://github.com/juttle/juttle), with read & write support.
