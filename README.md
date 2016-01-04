@@ -54,6 +54,21 @@ within Juttle. To do so, add the following to your `~/.juttle/config.json` file:
 
 The URL in the `url` key should point to the API url of your InfluxDB instance.
 
+### Authentication
+
+Influx adapter supports HTTP basic authentication. To use it, modify the `url`
+key to include the username and password:
+
+```json
+{
+    "adapters": {
+        "juttle-influx-adapter": {
+            "url": "http://username:password@localhost:8086/"
+        }
+    }
+}
+```
+
 ## Usage
 
 ### Read options
