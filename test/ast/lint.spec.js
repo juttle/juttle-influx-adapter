@@ -44,7 +44,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = parser.parseFilter(test);
-            expect(linter.lint.bind(linter, ast)).to.throw(/cannot be used in filter/);
+            expect(linter.lint.bind(linter, ast)).to.throw(/Filtering by time is not supported/);
         });
     });
 });
