@@ -72,7 +72,6 @@ var Write = Juttle.proc.sink.extend({
 });
 
 var Read = Juttle.proc.source.extend({
-    sourceType: 'batch',
     procName: 'read-influx',
 
     initialize: function(options, params, pname, location, program, juttle) {
