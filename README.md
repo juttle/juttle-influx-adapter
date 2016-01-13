@@ -45,7 +45,7 @@ within Juttle. To do so, add the following to your `~/.juttle/config.json` file:
 ```json
 {
     "adapters": {
-        "juttle-influx-adapter": {
+        "influx": {
             "url": "http://localhost:8086/"
         }
     }
