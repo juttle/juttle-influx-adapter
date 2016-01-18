@@ -13,9 +13,17 @@ var check_juttle = juttle_test_utils.check_juttle;
 
 var influx = require('../index.js');
 
-var influx_api_url = url.parse('http://localhost:8086/');
-var retry_options = { interval: 50, timeout: 250 };
+var retry_options = {
+    interval: 50,
+    timeout: 2000
+};
 
+var influx_api_url = {
+    protocol: 'http',
+    hostname: process.env.INFLUX_HOST || 'localhost',
+    port: process.env.INFLUX_PORT || 8086,
+    pathname: '/'
+};
 
 var Juttle = require('juttle/lib/runtime').Juttle;
 Juttle.adapters.register('influx', influx({
