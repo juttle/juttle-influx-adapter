@@ -142,6 +142,16 @@ describe('serialization', function() {
             expect(serializer.toInflux(point)).to.equal('m num=1e+21');
         });
 
+        it('serializing object fields throws an error', function() {
+            var point = { obj: { k: "v" }, _measurement: 'm' };
+            expect(serializer.toInflux.bind(serializer, point)).to.throw(Error, /not supported/);
+        });
+
+        it('serializing array fields throws an error', function() {
+            var point = { arr: [1,2,3], _measurement: 'm' };
+            expect(serializer.toInflux.bind(serializer, point)).to.throw(Error, /not supported/);
+        });
+
         describe('measurement option', function() {
             it('is used as a fallback w/o measurementField', function() {
                 var serializer = new Serializer({measurement: 'm'});
