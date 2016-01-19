@@ -166,7 +166,7 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'read influx -db "test" -measurements "cpu" -from :' + from.toISOString() + ': -to :' + to.toISOString() + ': | view logger'
             }).catch(function(err) {
-                expect(err.message).to.include('From cannot be before to');
+                expect(err.message).to.include('From cannot be after to');
             });
         });
 

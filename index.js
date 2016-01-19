@@ -82,8 +82,8 @@ var Read = Juttle.proc.source.extend({
             throw new Error('Unknown option ' + unknown[0]);
         }
 
-        if (options.from && options.to && JuttleMoment.compare('>', options.from, options.to)) {
-            throw new Error('From cannot be before to');
+        if (options.from && options.to && JuttleMoment.gt(options.from, options.to)) {
+            throw new Error('From cannot be after to');
         }
 
         this.serializer = new Serializer(_.pick(options, 'measurementField'));
@@ -133,8 +133,7 @@ var Read = Juttle.proc.source.extend({
         if (!_.has(t2, 'time')) {
             return 1;
         }
-        // FIXME: doesn't handle equal moments
-        return JuttleMoment.compare('>', t1.time, t2.time) ? 1 : -1;
+        return JuttleMoment.compare(t1.time, t2.time);
     },
 
     parse: function(data) {
