@@ -62,7 +62,7 @@ key to include the username and password:
 ```json
 {
     "adapters": {
-        "juttle-influx-adapter": {
+        "influx": {
             "url": "http://username:password@localhost:8086/"
         }
     }
