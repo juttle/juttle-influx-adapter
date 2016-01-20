@@ -334,6 +334,24 @@ describe('@live influxdb tests', function () {
             });
         });
 
+        it('point with array triggers a warning', function() {
+            return check_juttle({
+                program: 'emit -limit 1 | put host = "host0", value = [1,2,3] | write influx -db "test" -measurement "cpu"'
+            }).then(function(res) {
+                expect(res.warnings.length).to.not.equal(0);
+                expect(res.warnings[0]).to.include('not supported');
+            });
+        });
+
+        it('point with object triggers a warning', function() {
+            return check_juttle({
+                program: 'emit -limit 1 | put host = "host0", value = {k:"v"} | write influx -db "test" -measurement "cpu"'
+            }).then(function(res) {
+                expect(res.warnings.length).to.not.equal(0);
+                expect(res.warnings[0]).to.include('not supported');
+            });
+        });
+
         it('valFields override', function() {
             return check_juttle({
                 program: 'emit -points [{"host":"host0","value":0,"str":"value"}] | write influx -db "test" -measurement "cpu" -valFields "str"'
