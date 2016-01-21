@@ -21,12 +21,12 @@ describe('influxql query building', function() {
             expect(builder.build({fields: ['key1', 'key2']})).to.equal('SELECT key1,key2 FROM /.*/');
         });
 
-        it('with measurement', function() {
-            expect(builder.build({measurements: 'm'})).to.equal('SELECT * FROM m');
+        it('with name', function() {
+            expect(builder.build({names: 'm'})).to.equal('SELECT * FROM m');
         });
 
-        it('with measuremlnts', function() {
-            expect(builder.build({measurements: ['m1', 'm2']})).to.equal('SELECT * FROM m1,m2');
+        it('with names', function() {
+            expect(builder.build({names: ['m1', 'm2']})).to.equal('SELECT * FROM m1,m2');
         });
 
         it('with regexp', function() {
