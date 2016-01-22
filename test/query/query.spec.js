@@ -1,3 +1,5 @@
+'use strict';
+
 var expect = require('chai').expect;
 var parser = require('juttle/lib/parser');
 var QueryBuilder = require('../../lib/query');

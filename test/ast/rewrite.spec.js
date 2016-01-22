@@ -1,3 +1,5 @@
+'use strict';
+
 var Rewriter = require('../../lib/ast/rewrite');
 
 var parser = require('juttle/lib/parser');

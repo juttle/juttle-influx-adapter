@@ -1,3 +1,5 @@
+'use strict';
+
 var expect = require('chai').expect;
 var Serializer = require('../lib/serializer');
 var JuttleMoment = require('juttle/lib/moment').JuttleMoment;

@@ -1,3 +1,4 @@
+'use strict';
 
 var Read = require('./lib/read');
 var Write = require('./lib/write');
