@@ -49,7 +49,7 @@ var DB = {
 
     query: function(q) {
         var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { 'q': q, 'db': 'test' } });
-        return request.async({url: url.format(requestUrl), method: 'GET' }).then(this._handle_response).catch(function(e) {
+        return request.async({ url: url.format(requestUrl), method: 'GET' }).then(this._handle_response).catch(function(e) {
             throw e;
         });
     },
@@ -67,13 +67,13 @@ var DB = {
         var requestUrl = _.extend(influx_api_url, { pathname: '/write', query: { 'db': 'test', 'precision': 'ms' } });
 
         for (var i = 0; i < this._points; i++) {
-            var t = this._t0 + i * this._dt;
-            payload += 'cpu,host=host' + i + ' value=' + i + ' ' + t + '\n';
+            var t_i = this._t0 + i * this._dt;
+            payload += 'cpu,host=host' + i + ' value=' + i + ' ' + t_i + '\n';
         }
 
         for (var j = 0; j < this._points; j++) {
-            var t = this._t0 + j * this._dt;
-            payload += 'mem,host=host' + j + ' value=' + j + ' ' + t + '\n';
+            var t_j = this._t0 + j * this._dt;
+            payload += 'mem,host=host' + j + ' value=' + j + ' ' + t_j + '\n';
         }
 
         return request.async({
@@ -126,7 +126,7 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'read influx -db "test" -nameField "name" name =~ /^(cpu|mem)$/ | view logger'
             }).then(function(res) {
-                expect(res.sinks.logger.length).to.equal(20)
+                expect(res.sinks.logger.length).to.equal(20);
                 expect(res.sinks.logger[0].time).to.equal(res.sinks.logger[1].time);
 
                 _.each(res.sinks.logger, function(pt, i) {

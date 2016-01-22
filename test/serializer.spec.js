@@ -27,12 +27,12 @@ describe('serialization', function() {
 
         it('stores key value pairs into object', function() {
             var point = serializer.toJuttle('test', ['key1', 'key2'], ['val1', 'val2']);
-            expect(point).to.deep.equal({key1: 'val1', key2: 'val2'});
+            expect(point).to.deep.equal({ key1: 'val1', key2: 'val2' });
         });
 
         describe('nameField option', function() {
             it('stores name to specified field', function() {
-                var serializer = new Serializer({nameField: '_name'});
+                var serializer = new Serializer({ nameField: '_name' });
                 var point = serializer.toJuttle('test', ['key'], ['val']);
                 expect(point._name).to.equal('test');
             });
@@ -40,7 +40,7 @@ describe('serialization', function() {
     });
 
     describe('to influx', function() {
-        var serializer = new Serializer({nameField: '_name'});
+        var serializer = new Serializer({ nameField: '_name' });
 
         it('requires name', function() {
             var point = { num: 1 };
@@ -129,7 +129,7 @@ describe('serialization', function() {
         });
 
         it('escapes double quotes in strings', function() {
-            var serializer = new Serializer({valFields: 'str', nameField: '_name'});
+            var serializer = new Serializer({ valFields: 'str', nameField: '_name' });
             var point = { str: 'can haz "quotes"', _name: 'n' };
             expect(serializer.toInflux(point)).to.equal('n str="can haz \\"quotes\\""');
         });
@@ -164,7 +164,7 @@ describe('serialization', function() {
 
         describe('name option', function() {
             it('is used as a fallback w/o point containing nameField', function() {
-                var serializer = new Serializer({name: 'n'});
+                var serializer = new Serializer({ name: 'n' });
                 var point = { num: 1 };
                 expect(serializer.toInflux(point).split(" ")[0]).to.equal('n');
             });
@@ -172,7 +172,7 @@ describe('serialization', function() {
 
         describe('intFields option', function() {
             it('serializes numbers as ints', function() {
-                var serializer = new Serializer({intFields: 'num,another_num', nameField: '_name'});
+                var serializer = new Serializer({ intFields: 'num,another_num', nameField: '_name' });
                 var point = { num: 1, another_num: 2, fp: 1, _name: 'n' };
                 expect(serializer.toInflux(point)).to.equal('n num=1i,another_num=2i,fp=1');
             });
@@ -180,7 +180,7 @@ describe('serialization', function() {
 
         describe('valFields option', function() {
             it('serializes strings as fields', function() {
-                var serializer = new Serializer({valFields: 'str,another_str', nameField: '_name'});
+                var serializer = new Serializer({ valFields: 'str,another_str', nameField: '_name' });
                 var point = { str: 'one', another_str: 'two', tag: 'tag', _name: 'n' };
                 expect(serializer.toInflux(point)).to.equal('n,tag=tag str="one",another_str="two"');
             });
