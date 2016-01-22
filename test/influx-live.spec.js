@@ -71,6 +71,11 @@ var DB = {
             payload += 'cpu,host=host' + i + ' value=' + i + ' ' + t + '\n';
         }
 
+        for (var j = 0; j < this._points; j++) {
+            var t = this._t0 + j * this._dt;
+            payload += 'mem,host=host' + j + ' value=' + j + ' ' + t + '\n';
+        }
+
         return request.async({
             url: url.format(requestUrl),
             method: 'POST',
@@ -114,6 +119,19 @@ describe('@live influxdb tests', function () {
             }).then(function(res) {
                 expect(res.sinks.logger.length).to.equal(10);
                 expect(res.sinks.logger[0].value).to.equal(0);
+            });
+        });
+
+        it('select across names', function() {
+            return check_juttle({
+                program: 'read influx -db "test" -nameField "name" name =~ /^(cpu|mem)$/ | view logger'
+            }).then(function(res) {
+                expect(res.sinks.logger.length).to.equal(20)
+                expect(res.sinks.logger[0].time).to.equal(res.sinks.logger[1].time);
+
+                _.each(res.sinks.logger, function(pt, i) {
+                    expect(pt.name === 'cpu' || pt.name === 'mem').to.equal(true);
+                });
             });
         });
 
