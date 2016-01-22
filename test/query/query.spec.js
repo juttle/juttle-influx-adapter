@@ -55,6 +55,16 @@ describe('influxql query building', function() {
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1');
             });
 
+            it('simple filter disregards name', function() {
+                var ast = parser.parseFilter('name = "test"');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/');
+            });
+
+            it('implicit and disregards name', function() {
+                var ast = parser.parseFilter('name = "test" key = "val"');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = \'val\'');
+            });
+
             it('simple filter string', function() {
                 var ast = parser.parseFilter('key = "val"');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = \'val\'');
