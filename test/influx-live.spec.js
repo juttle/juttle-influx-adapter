@@ -82,7 +82,7 @@ var DB = {
 describe('@live influxdb tests', function () {
     describe('read', function() {
         before(function(done) {
-            DB.drop().then(function() { return DB.create() }).then(function() { return DB.insert(); }).finally(done);
+            DB.drop().then(function() { return DB.create(); }).then(function() { return DB.insert(); }).finally(done);
         });
 
         after(function(done) {
@@ -101,8 +101,8 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'read influx -db "test" -raw "SELECT * FROM cpu" | view logger'
             }).then(function(res) {
-                expect(res.sinks.logger.length).to.equal(10)
-                expect(res.sinks.logger[0].value).to.equal(0)
+                expect(res.sinks.logger.length).to.equal(10);
+                expect(res.sinks.logger[0].value).to.equal(0);
             });
         });
 
@@ -110,8 +110,8 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'read influx -db "test" -measurements "cpu" | view logger'
             }).then(function(res) {
-                expect(res.sinks.logger.length).to.equal(10)
-                expect(res.sinks.logger[0].value).to.equal(0)
+                expect(res.sinks.logger.length).to.equal(10);
+                expect(res.sinks.logger[0].value).to.equal(0);
             });
         });
 
@@ -185,7 +185,7 @@ describe('@live influxdb tests', function () {
                 return check_juttle({
                     program: 'read influx -db "test" -measurements "cpu" host = "host1" | view logger'
                 }).then(function(res) {
-                    expect(res.sinks.logger.length).to.equal(1)
+                    expect(res.sinks.logger.length).to.equal(1);
                     expect(res.sinks.logger[0].host).to.equal('host1');
                 });
             });
@@ -194,7 +194,7 @@ describe('@live influxdb tests', function () {
                 return check_juttle({
                     program: 'read influx -db "test" -measurements "cpu" value = 5 | view logger'
                 }).then(function(res) {
-                    expect(res.sinks.logger.length).to.equal(1)
+                    expect(res.sinks.logger.length).to.equal(1);
                     expect(res.sinks.logger[0].value).to.equal(5);
                 });
             });
@@ -281,7 +281,7 @@ describe('@live influxdb tests', function () {
 
     describe('write', function() {
         beforeEach(function(done) {
-            DB.drop().then(function() { return DB.create() }).finally(done);
+            DB.drop().then(function() { return DB.create(); }).finally(done);
         });
 
         afterEach(function(done) {
