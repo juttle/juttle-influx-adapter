@@ -116,9 +116,9 @@ describe('serialization', function() {
 
             var vals   = serializer.toInflux(point).split(' ')[1];
             var endstr = vals.split(',')[1];
-            var t      = endstr.split('=')[1];
+            var time   = endstr.split('=')[1];
 
-            expect(t).to.equal(end.unixms() + '');
+            expect(time).to.equal(end.unixms() + '');
         });
 
         it('serializes boolean values', function() {
