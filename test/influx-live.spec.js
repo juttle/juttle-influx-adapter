@@ -47,6 +47,22 @@ var DB = {
         return response.body === "" ? null : JSON.parse(response.body);
     },
 
+    _fixture: function() {
+        var payload = "";
+
+        for (var i = 0; i < this._points; i++) {
+            var t_i = this._t0 + i * this._dt;
+            payload += 'cpu,host=host' + i + ' value=' + i + ' ' + t_i + '\n';
+        }
+
+        for (var j = 0; j < this._points; j++) {
+            var t_j = this._t0 + j * this._dt;
+            payload += 'mem,host=host' + j + ' value=' + j + ' ' + t_j + '\n';
+        }
+
+        return payload;
+    },
+
     query: function(q) {
         var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { 'q': q, 'db': 'test' } });
         return request.async({ url: url.format(requestUrl), method: 'GET' }).then(this._handle_response).catch(function(e) {
@@ -62,19 +78,9 @@ var DB = {
         return this.query('DROP DATABASE test');
     },
 
-    insert: function() {
-        var payload = "";
+    insert: function(data) {
+        var payload = data || this._fixture();
         var requestUrl = _.extend(influx_api_url, { pathname: '/write', query: { 'db': 'test', 'precision': 'ms' } });
-
-        for (var i = 0; i < this._points; i++) {
-            var t_i = this._t0 + i * this._dt;
-            payload += 'cpu,host=host' + i + ' value=' + i + ' ' + t_i + '\n';
-        }
-
-        for (var j = 0; j < this._points; j++) {
-            var t_j = this._t0 + j * this._dt;
-            payload += 'mem,host=host' + j + ' value=' + j + ' ' + t_j + '\n';
-        }
 
         return request.async({
             url: url.format(requestUrl),
@@ -147,7 +153,7 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'read influx -db "test" -limit 1 -fields "value" name = "cpu" | view logger'
             }).then(function(res) {
-                expect(_.keys(res.sinks.logger[0])).to.deep.equal(['time', 'value']);
+                expect(_.keys(res.sinks.logger[0])).to.deep.equal(['time', 'value', 'name']);
                 expect(res.sinks.logger[0].value).to.equal(0);
             });
         });
@@ -288,12 +294,27 @@ describe('@live influxdb tests', function () {
             });
         });
 
-        describe('name', function() {
-            it('stored in field specified by nameField option', function() {
+        describe('nameField', function() {
+            before(function(done) {
+                var payload = 'namefield,host=hostX,name=conflict value=1 ' + DB._t0;
+                DB.insert(payload).finally(done);
+            });
+
+            it('overwrites the name by default and triggers a warning', function() {
                 return check_juttle({
-                    program: 'read influx -db "test" -nameField "name" -limit 1 name = "cpu" | view logger'
+                    program: 'read influx -db "test" -limit 1 name = "namefield" | view logger'
                 }).then(function(res) {
-                    expect(res.sinks.logger[0].name).to.equal('cpu');
+                    expect(res.warnings[0]).to.include('Points contain name field');
+                    expect(res.sinks.logger[0].name).to.equal('namefield');
+                });
+            });
+
+            it('selects metric and stores its name based on nameField', function() {
+                return check_juttle({
+                    program: 'read influx -db "test" -nameField "metric" -limit 1 metric = "namefield" | view logger'
+                }).then(function(res) {
+                    expect(res.sinks.logger[0].name).to.equal('conflict');
+                    expect(res.sinks.logger[0].metric).to.equal('namefield');
                 });
             });
         });
