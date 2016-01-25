@@ -16,7 +16,18 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast)).to.throw(/Name field can be present only once/);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' })).to.throw(/Name field name can be present at most once/);
+        });
+    });
+
+    it('validates field according to nameField option', function() {
+        var tests = [
+            'metric = "cpu" and metric = "hi"',
+        ];
+
+        _.each(tests, function(test) {
+            var ast = utils.parseFilter(test);
+            expect(linter.lint.bind(linter, ast, { nameField: 'metric' })).to.throw(/Name field metric can be present at most once/);
         });
     });
 
@@ -30,7 +41,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast), test).to.not.throw;
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' }), test).to.not.throw;
         });
     });
 
@@ -43,7 +54,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast), test).to.throw(/Only equality and regular expressions are supported for name field/);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' }), test).to.throw(/Only equality and regular expressions are supported/);
         });
     });
 
@@ -55,7 +66,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast), test).to.throw(/Name filter cannot be empty/);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' }), test).to.throw(/nameField filter cannot be empty/);
         });
     });
 
@@ -66,7 +77,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast), test).to.throw(/Name cannot be nested inside the filter/);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' }), test).to.throw(/name cannot be nested inside the filter/);
         });
     });
 
@@ -78,7 +89,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast), test).to.throw(/Name filter must be a string or a regexp/);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' }), test).to.throw(/nameField filter must be a string or a regexp/);
         });
     });
 
@@ -90,7 +101,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast), test).to.not.throw;
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' }), test).to.not.throw;
         });
     });
 
@@ -102,7 +113,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast), test).to.throw(/Name cannot be nested inside the filter/);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' }), test).to.throw(/name cannot be nested inside the filter/);
         });
     });
 
@@ -116,7 +127,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast)).to.throw(/Time field is not allowed in filter expressions/);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' })).to.throw(/Time field is not allowed in filter expressions/);
         });
     });
 
@@ -130,7 +141,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast)).to.throw(/Filtering by time is not supported/);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' })).to.throw(/Filtering by time is not supported/);
         });
     });
 
@@ -143,7 +154,7 @@ describe('query linting', function() {
 
         _.each(tests, function(test) {
             var ast = utils.parseFilter(test);
-            expect(linter.lint.bind(linter, ast)).to.throw(/Filtering by time is not supported/);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' })).to.throw(/Filtering by time is not supported/);
         });
     });
 });
