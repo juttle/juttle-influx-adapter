@@ -163,14 +163,6 @@ describe('serialization', function() {
             });
         });
 
-        describe('name option', function() {
-            it('is used as a fallback w/o point containing nameField', function() {
-                var serializer = new Serializer({ name: 'n' });
-                var point = { num: 1 };
-                expect(serializer.toInflux(point, 'nonexistent').split(" ")[0]).to.equal('n');
-            });
-        });
-
         describe('intFields option', function() {
             it('serializes numbers as ints', function() {
                 var serializer = new Serializer({ intFields: 'num,another_num', nameField: '_name' });
