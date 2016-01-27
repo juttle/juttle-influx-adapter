@@ -214,8 +214,6 @@ describe('@live influxdb tests', function () {
             });
         });
 
-        it.skip('order by', function() {});
-
         describe('filters', function() {
             it('on tags', function() {
                 return check_juttle({
