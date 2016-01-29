@@ -4,6 +4,7 @@ var expect = require('chai').expect;
 var parser = require('juttle/lib/parser');
 var QueryBuilder = require('../../lib/query');
 var JuttleMoment = require('juttle/lib/moment').JuttleMoment;
+var utils = require('../test_utils');
 
 describe('influxql query building', function() {
     var builder = new QueryBuilder();
@@ -31,17 +32,17 @@ describe('influxql query building', function() {
             });
 
             it('uses value of name', function() {
-                var ast = parser.parseFilter('name = "cpu"');
+                var ast = utils.parseFilter('name = "cpu"');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM "cpu"');
             });
 
             it('name accepts globs', function() {
-                var ast = parser.parseFilter('name =~ "cpu"');
+                var ast = utils.parseFilter('name =~ "cpu"');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /^cpu$/');
             });
 
             it('name accepts regexps', function() {
-                var ast = parser.parseFilter('name =~ /cpu/');
+                var ast = utils.parseFilter('name =~ /cpu/');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /cpu/');
             });
         });
@@ -64,64 +65,64 @@ describe('influxql query building', function() {
 
         describe('WHERE', function() {
             it('simple filter', function() {
-                var ast = parser.parseFilter('key = 1');
+                var ast = utils.parseFilter('key = 1');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1');
             });
 
             it('simple filter name used as from', function() {
-                var ast = parser.parseFilter('name = "test"');
+                var ast = utils.parseFilter('name = "test"');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM "test"');
             });
 
             it('name in implicit and is used as from', function() {
-                var ast = parser.parseFilter('name = "test" key = "val"');
+                var ast = utils.parseFilter('name = "test" key = "val"');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM "test" WHERE "key" = \'val\'');
             });
 
             it('simple filter string', function() {
-                var ast = parser.parseFilter('key = "val"');
+                var ast = utils.parseFilter('key = "val"');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = \'val\'');
             });
 
             it('simple filter number', function() {
-                var ast = parser.parseFilter('key = 1');
+                var ast = utils.parseFilter('key = 1');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1');
             });
 
             it('simple filter null', function() {
-                var ast = parser.parseFilter('key = null');
+                var ast = utils.parseFilter('key = null');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = null');
             });
 
             it('implicit and', function() {
-                var ast = parser.parseFilter('key1 = "val1" key2 = "val2"');
+                var ast = utils.parseFilter('key1 = "val1" key2 = "val2"');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' AND "key2" = \'val2\'');
             });
 
             it('and, nested or', function() {
-                var ast = parser.parseFilter('key1 = "val1" AND (key2 = "val2" OR key3 = "val3")');
+                var ast = utils.parseFilter('key1 = "val1" AND (key2 = "val2" OR key3 = "val3")');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' AND ("key2" = \'val2\' OR "key3" = \'val3\')');
             });
 
             it('regular expressions', function() {
-                var ast = parser.parseFilter('key1 =~ /val1/');
+                var ast = utils.parseFilter('key1 =~ /val1/');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" =~ /val1/');
             });
 
             it('regular expression negations', function() {
-                var ast = parser.parseFilter('key1 !~ /val1/');
+                var ast = utils.parseFilter('key1 !~ /val1/');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" !~ /val1/');
             });
 
             it('treats globs as regexes', function() {
-                var ast = parser.parseFilter('key1 =~ "t*est"');
+                var ast = utils.parseFilter('key1 =~ "t*est"');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" =~ /^t.*est$/');
             });
 
             it('in operator is converted to or sequence', function() {
-                var ast1 = parser.parseFilter('key1 in ["val1"]');
-                var ast2 = parser.parseFilter('key1 in ["val1", "val2"]');
-                var ast3 = parser.parseFilter('key1 in ["val1", "val2", "val3"]');
+                var ast1 = utils.parseFilter('key1 in ["val1"]');
+                var ast2 = utils.parseFilter('key1 in ["val1", "val2"]');
+                var ast3 = utils.parseFilter('key1 in ["val1", "val2", "val3"]');
 
                 expect(builder.build({}, {filter_ast: ast1})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\'');
                 expect(builder.build({}, {filter_ast: ast2})).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' OR "key1" = \'val2\'');
@@ -129,75 +130,75 @@ describe('influxql query building', function() {
             });
 
             it('in operator numeric', function() {
-                var ast = parser.parseFilter('key1 in [1, 2]');
+                var ast = utils.parseFilter('key1 in [1, 2]');
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" = 1 OR "key1" = 2');
             });
 
             it('in operator with empty array is handled', function() {
-                var ast0 = parser.parseFilter('key1 in []');
+                var ast0 = utils.parseFilter('key1 in []');
                 expect(builder.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE false');
             });
 
             it('handles compound ops', function() {
-                var ast0 = parser.parseFilter('key1 = "val1" and key1 = "val2" or key1 = "val3"');
+                var ast0 = utils.parseFilter('key1 = "val1" and key1 = "val2" or key1 = "val3"');
                 expect(builder.build({}, {filter_ast: ast0})).to.equal('SELECT * FROM /.*/ WHERE ("key1" = \'val1\' AND "key1" = \'val2\') OR "key1" = \'val3\'');
             });
 
             describe('NOT', function() {
                 it('in', function() {
-                    var ast = parser.parseFilter('not (key1 in ["val1", "val2"])');
+                    var ast = utils.parseFilter('not (key1 in ["val1", "val2"])');
                     expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != \'val1\' AND "key1" != \'val2\'');
                 });
 
                 it('>', function() {
-                    var ast = parser.parseFilter('not (key1 > 1)');
+                    var ast = utils.parseFilter('not (key1 > 1)');
                     expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" <= 1');
                 });
 
                 it('<', function() {
-                    var ast = parser.parseFilter('not (key1 < 1)');
+                    var ast = utils.parseFilter('not (key1 < 1)');
                     expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" >= 1');
                 });
 
                 it('=', function() {
-                    var ast = parser.parseFilter('not (key1 = 1)');
+                    var ast = utils.parseFilter('not (key1 = 1)');
                     expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1');
                 });
 
                 it('=~', function() {
-                    var ast = parser.parseFilter('not (key1 =~ /val1/)');
+                    var ast = utils.parseFilter('not (key1 =~ /val1/)');
                     expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" !~ /val1/');
                 });
 
                 it('AND implicit', function() {
-                    var ast = parser.parseFilter('not (key1 = 1 key2 = 2)');
+                    var ast = utils.parseFilter('not (key1 = 1 key2 = 2)');
                     expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1 OR "key2" != 2');
                 });
 
                 it('AND explicit', function() {
-                    var ast = parser.parseFilter('not (key1 = 1 and key2 = 2)');
+                    var ast = utils.parseFilter('not (key1 = 1 and key2 = 2)');
                     expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1 OR "key2" != 2');
                 });
 
                 it('AND explicit inequalities', function() {
-                    var ast = parser.parseFilter('not (key1 < 1 and key2 > 2)');
+                    var ast = utils.parseFilter('not (key1 < 1 and key2 > 2)');
                     expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" >= 1 OR "key2" <= 2');
                 });
 
                 it('OR', function() {
-                    var ast = parser.parseFilter('not (key1 = 1 OR key2 = 2)');
+                    var ast = utils.parseFilter('not (key1 = 1 OR key2 = 2)');
                     expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key1" != 1 AND "key2" != 2');
                 });
             });
 
             describe('time in filters', function() {
                 it('is not allowed as time field', function() {
-                    var ast = parser.parseFilter('time > 1449229920');
+                    var ast = utils.parseFilter('time > 1449229920');
                     expect(builder.build.bind(builder, {}, {filter_ast: ast})).to.throw(/Time field is not allowed in filter/);
                 });
 
                 it('is not allowed as moment', function() {
-                    var ast = parser.parseFilter('created_at > :now:');
+                    var ast = utils.parseFilter('created_at > :now:');
                     expect(builder.build.bind(builder, {}, {filter_ast: ast})).to.throw(/Filtering by time is not supported/);
                 });
             });
@@ -210,7 +211,7 @@ describe('influxql query building', function() {
                 var to = new JuttleMoment(t2);
 
                 it('is added into the query', function() {
-                    var ast = parser.parseFilter('key = 1');
+                    var ast = utils.parseFilter('key = 1');
                     expect(builder.build({from: from, to: to}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
                 });
 
@@ -219,12 +220,12 @@ describe('influxql query building', function() {
                 });
 
                 it('is added to binary expr', function() {
-                    var ast = parser.parseFilter('key = 1 and key = 2');
+                    var ast = utils.parseFilter('key = 1 and key = 2');
                     expect(builder.build({from: from, to: to}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "key" = 2 AND "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
                 });
 
                 it('is added to unary expr', function() {
-                    var ast = parser.parseFilter('not (key = 1)');
+                    var ast = utils.parseFilter('not (key = 1)');
                     expect(builder.build({from: from, to: to}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" != 1 AND "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
                 });
 
@@ -233,7 +234,7 @@ describe('influxql query building', function() {
                 });
 
                 it('only from and filter', function() {
-                    var ast = parser.parseFilter('key = 1');
+                    var ast = utils.parseFilter('key = 1');
                     expect(builder.build({from: from}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "time" >= \'' + from.valueOf() + '\'');
                 });
 
@@ -242,7 +243,7 @@ describe('influxql query building', function() {
                 });
 
                 it('only to and filter', function() {
-                    var ast = parser.parseFilter('key = 1');
+                    var ast = utils.parseFilter('key = 1');
                     expect(builder.build({to: to}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "time" < \'' + to.valueOf() + '\'');
                 });
             });

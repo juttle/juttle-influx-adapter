@@ -1,27 +1,28 @@
 'use strict';
 
-var Rewriter = require('../../lib/ast/rewrite');
-
-var parser = require('juttle/lib/parser');
-var ASTVisitor = require('juttle/lib/compiler/ast-visitor');
-var _ = require('underscore');
 var expect = require('chai').expect;
+var _ = require('underscore');
 
-var StripTextAndLocation = ASTVisitor.extend({
+var Rewriter = require('../../lib/ast/rewrite');
+var ASTVisitor = require('juttle/lib/compiler/ast-visitor');
+var utils = require('../test_utils');
+
+var StripMeta = ASTVisitor.extend({
     visit: function(node) {
         delete(node.location);
         delete(node.text);
+        delete(node.d);
         this['visit' + node.type].apply(this, arguments);
         return node;
     }
 });
 
 var check_rewrite = function(from, to) {
-    var strip = new StripTextAndLocation();
+    var strip = new StripMeta();
     var rewriter = new Rewriter();
 
-    var from_ast = strip.visit(parser.parseFilter(from));
-    var to_ast = strip.visit(parser.parseFilter(to));
+    var from_ast = strip.visit(utils.parseFilter(from));
+    var to_ast = strip.visit(utils.parseFilter(to));
 
     var new_ast = rewriter.rewrite(from_ast);
     expect(new_ast).to.deep.equal(to_ast, from + ' -> ' + to);
