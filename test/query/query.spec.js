@@ -21,16 +21,29 @@ describe('influxql query building', function() {
             expect(builder.build({fields: ['key1', 'key2']})).to.equal('SELECT key1,key2 FROM /.*/');
         });
 
-        it('with name', function() {
-            expect(builder.build({names: 'm'})).to.equal('SELECT * FROM m');
-        });
-
-        it('with names', function() {
-            expect(builder.build({names: ['m1', 'm2']})).to.equal('SELECT * FROM m1,m2');
-        });
-
         it('with regexp', function() {
             expect(builder.build({fields: ['key1', 'key2']})).to.equal('SELECT key1,key2 FROM /.*/');
+        });
+
+        describe('FROM', function() {
+            it('defaults to /.*/', function() {
+                expect(builder.build({}, {})).to.equal('SELECT * FROM /.*/');
+            });
+
+            it('uses value of name', function() {
+                var ast = parser.parseFilter('name = "cpu"');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM "cpu"');
+            });
+
+            it('name accepts globs', function() {
+                var ast = parser.parseFilter('name =~ "cpu"');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /^cpu$/');
+            });
+
+            it('name accepts regexps', function() {
+                var ast = parser.parseFilter('name =~ /cpu/');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /cpu/');
+            });
         });
 
         describe('LIMIT', function() {
@@ -55,14 +68,14 @@ describe('influxql query building', function() {
                 expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = 1');
             });
 
-            it('simple filter disregards name', function() {
+            it('simple filter name used as from', function() {
                 var ast = parser.parseFilter('name = "test"');
-                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM "test"');
             });
 
-            it('implicit and disregards name', function() {
+            it('name in implicit and is used as from', function() {
                 var ast = parser.parseFilter('name = "test" key = "val"');
-                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM /.*/ WHERE "key" = \'val\'');
+                expect(builder.build({}, {filter_ast: ast})).to.equal('SELECT * FROM "test" WHERE "key" = \'val\'');
             });
 
             it('simple filter string', function() {
