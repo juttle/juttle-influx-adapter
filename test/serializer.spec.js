@@ -9,103 +9,104 @@ describe('serialization', function() {
         var serializer = new Serializer();
 
         it('requires all args', function() {
-            expect(serializer.toJuttle.bind(serializer, null, [], [])).to.throw(Error, /measurement argument required/);
-            expect(serializer.toJuttle.bind(serializer, 'test', null, [])).to.throw(Error, /keys argument required/);
-            expect(serializer.toJuttle.bind(serializer, 'test', [], null)).to.throw(Error, /values argument required/);
+            expect(serializer.toJuttle.bind(serializer, null, [], [], 'test')).to.throw(Error, /name argument required/);
+            expect(serializer.toJuttle.bind(serializer, 'test', null, [], 'test')).to.throw(Error, /keys argument required/);
+            expect(serializer.toJuttle.bind(serializer, 'test', [], null, 'test')).to.throw(Error, /values argument required/);
+            expect(serializer.toJuttle.bind(serializer, 'test', [], [], null)).to.throw(Error, /nameField argument required/);
         });
 
         it('converts time to a juttle moment', function() {
-            var point = serializer.toJuttle('test', ['time'], [Date.now()]);
+            var point = serializer.toJuttle('test', ['time'], [Date.now()], 'name');
             expect(point.time).to.not.equal(undefined);
             expect(point.time).to.be.an.instanceof(JuttleMoment);
         });
 
         it('converts nulls to empty strings', function() {
-            var point = serializer.toJuttle('test', ['key'], [null]);
+            var point = serializer.toJuttle('test', ['key'], [null], 'name');
             expect(point.key).to.equal('');
         });
 
         it('stores key value pairs into object', function() {
-            var point = serializer.toJuttle('test', ['key1', 'key2'], ['val1', 'val2']);
-            expect(point).to.deep.equal({key1: 'val1', key2: 'val2'});
+            var point = serializer.toJuttle('test', ['key1', 'key2'], ['val1', 'val2'], 'name');
+            expect(point).to.deep.equal({ key1: 'val1', key2: 'val2', name: 'test' });
         });
 
-        describe('measurementField option', function() {
-            it('stores measurement name to specified field', function() {
-                var serializer = new Serializer({measurementField: '_measurement'});
-                var point = serializer.toJuttle('test', ['key'], ['val']);
-                expect(point._measurement).to.equal('test');
+        describe('nameField option', function() {
+            it('stores name to specified field', function() {
+                var serializer = new Serializer();
+                var point = serializer.toJuttle('test', ['key'], ['val'], '_name');
+                expect(point._name).to.equal('test');
             });
         });
     });
 
     describe('to influx', function() {
-        var serializer = new Serializer({measurementField: '_measurement'});
+        var serializer = new Serializer();
 
-        it('requires measurement', function() {
+        it('requires name', function() {
             var point = { num: 1 };
-            expect(serializer.toInflux.bind(serializer, point)).to.throw(Error, /point is missing a measurement/);
+            expect(serializer.toInflux.bind(serializer, point, 'name')).to.throw(Error, /point is missing a name/);
         });
 
-        it('measurement is not in the values', function() {
-            var point = { num: 1, _measurement: 'test' };
-            expect(serializer.toInflux(point).split(" ")[1]).to.not.include('test');
+        it('name is not in the values', function() {
+            var point = { num: 1, _name: 'test' };
+            expect(serializer.toInflux(point, '_name').split(" ")[1]).to.not.include('test');
         });
 
         it('requires at least one field', function() {
-            var point = { _measurement: 'm' };
-            expect(serializer.toInflux.bind(serializer, point)).to.throw(Error, /point requires at least one field/);
+            var point = { _name: 'n' };
+            expect(serializer.toInflux.bind(serializer, point, '_name')).to.throw(Error, /point requires at least one field/);
         });
 
         it('requires at least one field w/ timestamp', function() {
-            var point = { _measurement: 'm', time: new JuttleMoment(Date.now()) };
-            expect(serializer.toInflux.bind(serializer, point)).to.throw(Error, /point requires at least one field/);
+            var point = { _name: 'n', time: new JuttleMoment(Date.now()) };
+            expect(serializer.toInflux.bind(serializer, point, '_name')).to.throw(Error, /point requires at least one field/);
         });
 
-        it('escapes commas in measurements', function() {
-            var point = { num: 1.1, _measurement: 'm,' };
-            expect(serializer.toInflux(point)).to.equal('m\\, num=1.1');
+        it('escapes commas in names', function() {
+            var point = { num: 1.1, _name: 'n,' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n\\, num=1.1');
         });
 
         it('escapes commas in tag keys and values', function() {
-            var point = { 'str,': 'val,', num: 1.1, _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m,str\\,=val\\, num=1.1');
+            var point = { 'str,': 'val,', num: 1.1, _name: 'n' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n,str\\,=val\\, num=1.1');
         });
 
-        it('escapes spaces in measurements', function() {
-            var point = { num: 1.1, _measurement: 'm ' };
-            expect(serializer.toInflux(point)).to.equal('m\\  num=1.1');
+        it('escapes spaces in names', function() {
+            var point = { num: 1.1, _name: 'n ' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n\\  num=1.1');
         });
 
         it('escapes spaces in tag keys and values', function() {
-            var point = { num: 1.1, ' str ': ' val ', _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m,\\ str\\ =\\ val\\  num=1.1');
+            var point = { num: 1.1, ' str ': ' val ', _name: 'n' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n,\\ str\\ =\\ val\\  num=1.1');
         });
 
         it('treats numeric values as fields', function() {
-            var point = { num: 1.1, _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m num=1.1');
+            var point = { num: 1.1, _name: 'n' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n num=1.1');
         });
 
         it('treats string values as tags', function() {
-            var point = { str: 'val', num: 1.1, _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m,str=val num=1.1');
+            var point = { str: 'val', num: 1.1, _name: 'n' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n,str=val num=1.1');
         });
 
         it('handles multiple values', function() {
-            var point = { num: 1.1, another: 2.2, _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m num=1.1,another=2.2');
+            var point = { num: 1.1, another: 2.2, _name: 'n' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n num=1.1,another=2.2');
         });
 
         it('handles multiple tags', function() {
-            var point = { tag: 'one', another: 'two', num: 1.1, _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m,tag=one,another=two num=1.1');
+            var point = { tag: 'one', another: 'two', num: 1.1, _name: 'n' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n,tag=one,another=two num=1.1');
         });
 
         it('serializes timestamp with milisecond precision', function() {
             var now = new JuttleMoment(Date.now() / 1000);
-            var point = { num: 1.1, time: now, _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m num=1.1 ' + now.unixms());
+            var point = { num: 1.1, time: now, _name: 'n' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n num=1.1 ' + now.unixms());
         });
 
         it('serializes time as unix timestamps with milisecond precision', function() {
@@ -114,9 +115,9 @@ describe('serialization', function() {
             var start = new JuttleMoment(t / 1000);
             var end   = new JuttleMoment(t / 1000 + 10);
 
-            var point = { start: start, end: end, _measurement: 'm' };
+            var point = { start: start, end: end, _name: 'n' };
 
-            var vals   = serializer.toInflux(point).split(' ')[1];
+            var vals   = serializer.toInflux(point, '_name').split(' ')[1];
             var endstr = vals.split(',')[1];
             var time   = endstr.split('=')[1];
 
@@ -124,14 +125,14 @@ describe('serialization', function() {
         });
 
         it('serializes boolean values', function() {
-            var point = { t: true, f: false, _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m t=t,f=f');
+            var point = { t: true, f: false, _name: 'n' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n t=t,f=f');
         });
 
         it('escapes double quotes in strings', function() {
-            var serializer = new Serializer({valFields: 'str', measurementField: '_measurement'});
-            var point = { str: 'can haz "quotes"', _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m str="can haz \\"quotes\\""');
+            var serializer = new Serializer({ valFields: 'str', nameField: '_name' });
+            var point = { str: 'can haz "quotes"', _name: 'n' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n str="can haz \\"quotes\\""');
         });
 
         it.skip('sorts tags Go style', function() {
@@ -140,41 +141,41 @@ describe('serialization', function() {
         });
 
         it('handles serialization of large floats', function() {
-            var point = { num: 1e21, _measurement: 'm' };
-            expect(serializer.toInflux(point)).to.equal('m num=1e+21');
+            var point = { num: 1e21, _name: 'n' };
+            expect(serializer.toInflux(point, '_name')).to.equal('n num=1e+21');
         });
 
         it('serializing object fields throws an error', function() {
-            var point = { obj: { k: "v" }, _measurement: 'm' };
-            expect(serializer.toInflux.bind(serializer, point)).to.throw(Error, /not supported/);
+            var point = { obj: { k: "v" }, _name: 'n' };
+            expect(serializer.toInflux.bind(serializer, point, '_name')).to.throw(Error, /not supported/);
         });
 
         it('serializing array fields throws an error', function() {
-            var point = { arr: [1,2,3], _measurement: 'm' };
-            expect(serializer.toInflux.bind(serializer, point)).to.throw(Error, /not supported/);
+            var point = { arr: [1,2,3], _name: 'n' };
+            expect(serializer.toInflux.bind(serializer, point, '_name')).to.throw(Error, /not supported/);
         });
 
-        describe('measurement option', function() {
-            it('is used as a fallback w/o measurementField', function() {
-                var serializer = new Serializer({measurement: 'm'});
-                var point = { num: 1 };
-                expect(serializer.toInflux(point).split(" ")[0]).to.equal('m');
+        describe('nameField option', function() {
+            it('defaults to name', function() {
+                var serializer = new Serializer();
+                var point = { num: 1, name: 'n' };
+                expect(serializer.toInflux(point, 'name').split(" ")[0]).to.equal('n');
             });
         });
 
         describe('intFields option', function() {
             it('serializes numbers as ints', function() {
-                var serializer = new Serializer({intFields: 'num,another_num', measurementField: '_measurement'});
-                var point = { num: 1, another_num: 2, fp: 1, _measurement: 'm' };
-                expect(serializer.toInflux(point)).to.equal('m num=1i,another_num=2i,fp=1');
+                var serializer = new Serializer({ intFields: 'num,another_num', nameField: '_name' });
+                var point = { num: 1, another_num: 2, fp: 1, _name: 'n' };
+                expect(serializer.toInflux(point, '_name')).to.equal('n num=1i,another_num=2i,fp=1');
             });
         });
 
         describe('valFields option', function() {
             it('serializes strings as fields', function() {
-                var serializer = new Serializer({valFields: 'str,another_str', measurementField: '_measurement'});
-                var point = { str: 'one', another_str: 'two', tag: 'tag', _measurement: 'm' };
-                expect(serializer.toInflux(point)).to.equal('m,tag=tag str="one",another_str="two"');
+                var serializer = new Serializer({ valFields: 'str,another_str', nameField: '_name' });
+                var point = { str: 'one', another_str: 'two', tag: 'tag', _name: 'n' };
+                expect(serializer.toInflux(point, '_name')).to.equal('n,tag=tag str="one",another_str="two"');
             });
         });
     });
