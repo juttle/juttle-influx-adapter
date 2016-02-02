@@ -114,6 +114,7 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'read influx -db "test" -raw "SELECT * FROM cpu" | view logger'
             }).then(function(res) {
+                expect(res.errors.length).to.equal(0);
                 expect(res.sinks.logger.length).to.equal(10);
                 expect(res.sinks.logger[0].value).to.equal(0);
             });
