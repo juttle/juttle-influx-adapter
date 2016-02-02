@@ -469,7 +469,7 @@ describe('@live influxdb tests', function () {
 
         it('emits a warning on serialization but continues', function() {
             return check_juttle({
-                program: 'emit -every :1ms: -points [{"host":"host0","value":0},{"n":"cpu","host":"host1","value":1}] | write influx -db "test" -nameField "n"'
+                program: 'emit -points [{"host":"host0","value":0,"time":"' + (new Date(0)) + '"},{"n":"cpu","host":"host1","value":1,"time":"' + (new Date(1000)) + '"}] | write influx -db "test" -nameField "n"'
             }).then(function(res) {
                 expect(res.warnings.length).to.equal(1);
                 expect(res.warnings[0]).to.include('point is missing a name');
