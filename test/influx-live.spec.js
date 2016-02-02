@@ -210,7 +210,7 @@ describe('@live influxdb tests', function () {
             return check_juttle({
                 program: 'read influx -db "test" -from :' + from.toISOString() + ': -to :' + to.toISOString() + ': name = "cpu" | view logger'
             }).catch(function(err) {
-                expect(err.message).to.include('From cannot be after to');
+                expect(err.message).to.include('-to must not be earlier than -from');
             });
         });
 
