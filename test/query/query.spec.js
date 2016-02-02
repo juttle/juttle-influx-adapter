@@ -233,6 +233,11 @@ describe('influxql query building', function() {
                     expect(builder.build({ from: from, to: to, nameField: 'name' }, { filter_ast: ast })).to.equal('SELECT * FROM /.*/ WHERE "key" != 1 AND "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
                 });
 
+                it('with name field', function() {
+                    var ast = utils.parseFilter('name = "cpu"');
+                    expect(builder.build({ from: from, to: to, nameField: 'name' }, { filter_ast: ast })).to.equal('SELECT * FROM "cpu" WHERE "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
+                });
+
                 it('only from', function() {
                     expect(builder.build({ from: from, nameField: 'name' })).to.equal('SELECT * FROM /.*/ WHERE "time" >= \'' + from.valueOf() + '\'');
                 });
