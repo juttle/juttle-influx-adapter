@@ -452,11 +452,8 @@ describe('@live influxdb tests', function () {
         it('two points', function() {
             // This is a workaround for emit adding same time in ms to both points
             // and influx treating time as primary index, overwriting the points
-            var t1 = new Date(Date.now());
-            var t2 = new Date(Date.now() - 1000);
-
             return check_juttle({
-                program: 'emit -points [{"host":"host0","value":0,"time":"' + t1.toISOString() + '"},{"host":"host1","value":1,"time":" ' + t2.toISOString() + '"}] | put name = "cpu" | write influx -db "test"'
+                program: 'emit -points [{"host":"host0","value":0,"time"::now:},{"host":"host1","value":1,"time"::1s ago:}] | put name = "cpu" | write influx -db "test"'
             }).then(function(res) {
                 return retry(function() {
                     return DB.query('SELECT * FROM cpu').then(function(json) {
@@ -469,7 +466,7 @@ describe('@live influxdb tests', function () {
 
         it('emits a warning on serialization but continues', function() {
             return check_juttle({
-                program: 'emit -every :1ms: -points [{"host":"host0","value":0},{"n":"cpu","host":"host1","value":1}] | write influx -db "test" -nameField "n"'
+                program: 'emit -points [{"host":"host0","value":0,"time"::0:},{"n":"cpu","host":"host1","value":1,"time"::1:}] | write influx -db "test" -nameField "n"'
             }).then(function(res) {
                 expect(res.warnings.length).to.equal(1);
                 expect(res.warnings[0]).to.include('point is missing a name');
