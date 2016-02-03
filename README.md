@@ -12,7 +12,7 @@ Currently supports InfluxDB 0.9.
 Read entries from the `cpu` measurement where the `host` tag is `www123` and the default limit of 1000:
 
 ```juttle
-read influx -db 'test' -measurements 'cpu' host='www123' | view logger
+read influx -db 'test' name='cpu' host='www123' | view logger
 ```
 
 Perform an equivalent query using the -raw option:
@@ -24,7 +24,7 @@ read influx -db 'test' -raw "SELECT * FROM cpu where host='www123 LIMIT 1000' | 
 Write a single point into the `cpu` measurement:
 
 ```juttle
-emit -points [{ value: 0.01, host: 'www123' }] | write influx -db 'test' -measurement 'cpu'
+emit -points [{ value: 0.01, host: 'www123', name: 'cpu' }] | write influx -db 'test'
 ```
 
 ## Installation
@@ -81,10 +81,10 @@ Name | Type | Required | Description
 -----|------|----------|-------------
 `db`   | string | yes | database to use
 `raw`  | string | no  | send a raw InfluxQL query to InfluxDB
-`measurements` | array | no | measurements to query, defaults to all measurements
 `offset` | integer| no | record offset
-`limit`  | integer | no | query limit, defaults to 1000 records
-`measurementField` | string | no | if specified, measurement name will be saved in a point field with this name
+`limit`  | integer | no | query limit (default: 1000)
+`fields` | string | no | fields to select from the measurement (default: all)
+`nameField` | string | no | if specified, measurement name will be saved in a point field with this name (default: 'name')
 `from` | moment | no | select points after this time (inclusive)
 `to`   | moment | no | select points before this time (exclusive)
 
@@ -95,8 +95,7 @@ Name | Type | Required | Description
 `db`   | string | yes | database to use
 `intFields` | array | no | lists fields to be stored as integers instead of floats (default: none)
 `valFields` | array | no | lists fields to be stored as values instead of tags (default: all non-string fields)
-`measurement` | string | yes | measurement to use (required; optional if points contain measurement field as specified by the `measurementField` option)
-`measurementField` | string | no | points will be checked for this field and its value will be used as the measurement name
+`nameField` | string | no | points will be checked for this field and its value will be used as the measurement name (default: 'name')
 
 Note: when storing points, the following conventions are used:
 
