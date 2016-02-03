@@ -67,6 +67,20 @@ describe('influxql query building', function() {
             });
         });
 
+        describe('ORDER BY', function() {
+            it('adds clause', function() {
+                expect(builder.build({ orderBy: 'time', nameField: 'name' })).to.equal('SELECT * FROM /.*/ ORDER BY time ASC');
+            });
+
+            it('adds clause for direction', function() {
+                expect(builder.build({ orderBy: 'time', orderDescending: true, nameField: 'name' })).to.equal('SELECT * FROM /.*/ ORDER BY time DESC');
+            });
+
+            it('correct order with limit', function() {
+                expect(builder.build({ offset: 1, limit: 2, orderBy: 'time', nameField: 'name' })).to.equal('SELECT * FROM /.*/ ORDER BY time ASC LIMIT 2 OFFSET 1');
+            });
+        });
+
         describe('WHERE', function() {
             it('simple filter', function() {
                 var ast = utils.parseFilter('key = 1');

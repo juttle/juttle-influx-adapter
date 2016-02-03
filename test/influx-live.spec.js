@@ -214,8 +214,6 @@ describe('@live influxdb tests', function () {
             });
         });
 
-        it.skip('order by', function() {});
-
         describe('filters', function() {
             it('on tags', function() {
                 return check_juttle({
@@ -328,6 +326,81 @@ describe('@live influxdb tests', function () {
                 });
             });
         });
+
+        describe('optimizations', function() {
+            describe('head', function() {
+                it('head n', function() {
+                    return check_juttle({
+                        program: 'read influx -db "test" -from :0: name = "cpu" | head 3 | view logger'
+                    }).then(function(res) {
+                        expect(res.sinks.logger.length).to.equal(3);
+                    });
+                });
+
+                it('head n, unoptimized', function() {
+                    return check_juttle({
+                        program: 'read influx -optimize false -db "test" -from :0: name = "cpu" | head 3 | view logger'
+                    }).then(function(res) {
+                        expect(res.sinks.logger.length).to.equal(3);
+                    });
+                });
+
+                it('head n doesnt override limit', function() {
+                    return check_juttle({
+                        program: 'read influx -db "test" -limit 1 -from :0: name = "cpu" | head 3 | view logger'
+                    }).then(function(res) {
+                        expect(res.sinks.logger.length).to.equal(1);
+                    });
+                });
+
+                it('head n doesnt override limit, unoptimized', function() {
+                    return check_juttle({
+                        program: 'read influx -optimize false -db "test" -limit 1 -from :0: name = "cpu" | head 3 | view logger'
+                    }).then(function(res) {
+                        expect(res.sinks.logger.length).to.equal(1);
+                    });
+                });
+            });
+
+            describe('tail', function() {
+                it('tail n', function() {
+                    return check_juttle({
+                        program: 'read influx -db "test" -from :0: name = "cpu" | tail 3 | view logger'
+                    }).then(function(res) {
+                        expect(res.sinks.logger.length).to.equal(3);
+                        expect(res.sinks.logger[0].value).to.equal(7);
+                        expect(res.sinks.logger[2].value).to.equal(9);
+                    });
+                });
+
+                it('tail n, unoptimized', function() {
+                    return check_juttle({
+                        program: 'read influx -optimize false -db "test" -from :0: name = "cpu" | tail 3 | view logger'
+                    }).then(function(res) {
+                        expect(res.sinks.logger.length).to.equal(3);
+                        expect(res.sinks.logger[0].value).to.equal(7);
+                        expect(res.sinks.logger[2].value).to.equal(9);
+                    });
+                });
+
+                it('tail n doesnt override limit', function() {
+                    return check_juttle({
+                        program: 'read influx -db "test" -limit 1 -from :0: name = "cpu" | tail 3 | view logger'
+                    }).then(function(res) {
+                        expect(res.sinks.logger.length).to.equal(1);
+                    });
+                });
+
+                it('tail n doesnt override limit, unoptimized', function() {
+                    return check_juttle({
+                        program: 'read influx -optimize false -db "test" -limit 1 -from :0: name = "cpu" | tail 3 | view logger'
+                    }).then(function(res) {
+                        expect(res.sinks.logger.length).to.equal(1);
+                    });
+                });
+            });
+        });
+
     });
 
     describe('write', function() {
