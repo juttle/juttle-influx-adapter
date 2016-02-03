@@ -312,7 +312,7 @@ describe('@live influxdb tests', function () {
                 return check_juttle({
                     program: 'read influx -db "test" -from :0: -limit 1 name = "namefield" | view logger'
                 }).then(function(res) {
-                    expect(res.warnings).to.deep.equal(['Points contain name field, use nameField option to make the field accessible.']);
+                    expect(res.warnings).to.deep.equal(['internal error Points contain name field, use nameField option to make the field accessible.']);
                     expect(res.sinks.logger[0].name).to.equal('namefield');
                 });
             });
