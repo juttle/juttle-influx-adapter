@@ -7,6 +7,10 @@
         "es6": true
     },
     "rules": {
+        // clases dont' work outside strict
+        "strict": [ 0, "global" ],
+
+        // Juttle rules
         "indent": [ 2, 4, { "SwitchCase": 1 } ],
         "linebreak-style": [ 2, "unix" ],
         "no-unused-vars": [2, { "args": "none" }],
