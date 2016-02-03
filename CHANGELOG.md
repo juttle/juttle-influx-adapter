@@ -3,6 +3,22 @@
 This file documents all notable changes to Juttle Influx Adapter. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## 0.4.0
+
+Released 2016-02-03
+
+- Requires Juttle 0.4.0
+
+- Naming change - concept of a 'measurement' is consolidated under 'name'.
+
+    - In read, `measurements` option was removed in favor of filtering using `name`.
+
+    - In both read and write `measurementField` option was renamed to `nameField` and its default set to 'name'.
+
+    - In write, `measurement` option was no longer needed and removed.
+
+    - See [README.md](https://github.com/juttle/juttle-influx-adapter/blob/c177bd3f2aa15f6097fb97c858d6cfa7b2a80ba6/README.md) for examples and updated list of options.
+
 ## 0.3.0
 
 Released 2016-01-20
