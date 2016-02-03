@@ -39,7 +39,7 @@ var DB = {
     _points: 10,
     _dt: 1000,
 
-    _handle_response: function(response) {
+    _handle_response(response) {
         if (response.statusCode !== 200 && response.statusCode !== 204) {
             throw new Error(['error', response.statusCode, response.body].join(' '));
         }
@@ -47,7 +47,7 @@ var DB = {
         return response.body === "" ? null : JSON.parse(response.body);
     },
 
-    _fixture: function() {
+    _fixture() {
         var payload = "";
 
         for (var i = 0; i < this._points; i++) {
@@ -63,8 +63,8 @@ var DB = {
         return payload;
     },
 
-    query: function(q) {
-        var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { 'q': q, 'db': 'test' } });
+    query(q) {
+        var requestUrl = _.extend(influx_api_url, { pathname: '/query', query: { q, 'db': 'test' } });
         return request.async({
             url: url.format(requestUrl),
             method: 'GET'
@@ -73,15 +73,15 @@ var DB = {
         });
     },
 
-    create: function() {
+    create() {
         return this.query('CREATE DATABASE test');
     },
 
-    drop: function() {
+    drop() {
         return this.query('DROP DATABASE test');
     },
 
-    insert: function(data) {
+    insert(data) {
         var payload = data || this._fixture();
         var requestUrl = _.extend(influx_api_url, { pathname: '/write', query: { 'db': 'test', 'precision': 'ms' } });
 

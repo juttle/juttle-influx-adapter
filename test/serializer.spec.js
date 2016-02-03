@@ -115,7 +115,7 @@ describe('serialization', () => {
             var start = new JuttleMoment(t / 1000);
             var end   = new JuttleMoment(t / 1000 + 10);
 
-            var point = { start: start, end: end, _name: 'n' };
+            var point = { start, end, _name: 'n' };
 
             var vals   = serializer.toInflux(point, '_name').split(' ')[1];
             var endstr = vals.split(',')[1];
