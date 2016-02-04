@@ -12,13 +12,13 @@ Currently supports InfluxDB 0.9.
 Read entries from the `cpu` measurement where the `host` tag is `www123` and the default limit of 1000:
 
 ```juttle
-read influx -db 'test' name='cpu' host='www123' | view logger
+read influx -db 'test' name='cpu' host='www123' | view text
 ```
 
 Perform an equivalent query using the -raw option:
 
 ```juttle
-read influx -db 'test' -raw "SELECT * FROM cpu where host='www123 LIMIT 1000' | view logger
+read influx -db 'test' -raw "SELECT * FROM cpu where host='www123 LIMIT 1000' | view text
 ```
 
 Write a single point into the `cpu` measurement:
