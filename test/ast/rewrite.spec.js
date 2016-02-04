@@ -7,15 +7,15 @@ var Rewriter = require('../../lib/ast/rewrite');
 var ASTVisitor = require('juttle/lib/compiler/ast-visitor');
 var utils = require('../test_utils');
 
-var StripMeta = ASTVisitor.extend({
-    visit: function(node) {
+class StripMeta extends ASTVisitor {
+    visit(node) {
         delete(node.location);
         delete(node.text);
         delete(node.d);
         this['visit' + node.type].apply(this, arguments);
         return node;
     }
-});
+}
 
 var check_rewrite = function(from, to) {
     var strip = new StripMeta();
