@@ -12,7 +12,7 @@ class StripMeta extends ASTVisitor {
         delete(node.location);
         delete(node.text);
         delete(node.d);
-        this['visit' + node.type].apply(this, arguments);
+        this[`visit${node.type}`].apply(this, arguments);
         return node;
     }
 }
@@ -25,7 +25,7 @@ var check_rewrite = function(from, to) {
     var to_ast = strip.visit(utils.parseFilter(to));
 
     var new_ast = rewriter.rewrite(from_ast);
-    expect(new_ast).to.deep.equal(to_ast, from + ' -> ' + to);
+    expect(new_ast).to.deep.equal(to_ast, `${from} -> ${to}`);
 };
 
 describe('rewriter', () => {

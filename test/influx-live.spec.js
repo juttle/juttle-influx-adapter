@@ -52,12 +52,12 @@ var DB = {
 
         for (var i = 0; i < this._points; i++) {
             var t_i = this._t0 + i * this._dt;
-            payload += 'cpu,host=host' + i + ' value=' + i + ' ' + t_i + '\n';
+            payload += `cpu,host=host${i} value=${i} ${t_i}\n`;
         }
 
         for (var j = 0; j < this._points; j++) {
             var t_j = this._t0 + j * this._dt;
-            payload += 'mem,host=host' + j + ' value=' + j + ' ' + t_j + '\n';
+            payload += `mem,host=host${j} value=${j} ${t_j}\n`;
         }
 
         return payload;
@@ -181,7 +181,7 @@ describe('@live influxdb tests', () => {
         it('from', () => {
             var from = new Date(DB._t0 + 2 * DB._dt);
             return check_juttle({
-                program: 'read influx -db "test" -from :' + from.toISOString() + ': name = "cpu" | view logger'
+                program: `read influx -db "test" -from :${from.toISOString()}: name = "cpu" | view logger`
             }).then((res) => {
                 expect(res.sinks.logger.length).to.equal(8);
             });
@@ -190,7 +190,7 @@ describe('@live influxdb tests', () => {
         it('to', () => {
             var to = new Date(DB._t0 + 2 * DB._dt);
             return check_juttle({
-                program: 'read influx -db "test" -from :0: -to :' + to.toISOString() + ': name = "cpu" | view logger'
+                program: `read influx -db "test" -from :0: -to :${to.toISOString()}: name = "cpu" | view logger`
             }).then((res) => {
                 expect(res.errors).deep.equal([]);
                 expect(res.sinks.logger.length).to.equal(2);
@@ -201,7 +201,7 @@ describe('@live influxdb tests', () => {
             var from = new Date(DB._t0 + 2 * DB._dt);
             var to = new Date(DB._t0 + 5 * DB._dt);
             return check_juttle({
-                program: 'read influx -db "test" -from :' + from.toISOString() + ': -to :' + to.toISOString() + ': name = "cpu" | view logger'
+                program: `read influx -db "test" -from :${from.toISOString()}: -to :${to.toISOString()}: name = "cpu" | view logger`
             }).then((res) => {
                 expect(res.sinks.logger.length).to.equal(3);
             });
@@ -211,7 +211,7 @@ describe('@live influxdb tests', () => {
             var from = new Date(DB._t0 + 5 * DB._dt);
             var to = new Date(DB._t0 + 2 * DB._dt);
             return check_juttle({
-                program: 'read influx -db "test" -from :' + from.toISOString() + ': -to :' + to.toISOString() + ': name = "cpu" | view logger'
+                program: `read influx -db "test" -from :${from.toISOString()}: -to :${to.toISOString()}: name = "cpu" | view logger`
             }).catch((err) => {
                 expect(err.message).to.include('-to must not be earlier than -from');
             });
@@ -307,7 +307,7 @@ describe('@live influxdb tests', () => {
 
         describe('nameField', () => {
             before((done) => {
-                var payload = 'namefield,host=hostX,name=conflict value=1 ' + DB._t0;
+                var payload = `namefield,host=hostX,name=conflict value=1 ${DB._t0}`;
                 DB.insert(payload).finally(done);
             });
 
@@ -448,7 +448,7 @@ describe('@live influxdb tests', () => {
         it('point with time', () => {
             var t = new Date(Date.now());
             return check_juttle({
-                program: 'emit -points [{"time":"' + t.toISOString() + '","host":"host0","value":0,"name":"cpu"}] | write influx -db "test"'
+                program: `emit -points [{"time":"${t.toISOString()}","host":"host0","value":0,"name":"cpu"}] | write influx -db "test"`
             }).then((res) => {
                 return retry(() => {
                     return DB.query('SELECT * FROM cpu WHERE value = 0').then((json) => {

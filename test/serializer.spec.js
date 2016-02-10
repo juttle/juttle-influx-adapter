@@ -106,7 +106,7 @@ describe('serialization', () => {
         it('serializes timestamp with milisecond precision', () => {
             var now = new JuttleMoment(Date.now() / 1000);
             var point = { num: 1.1, time: now, _name: 'n' };
-            expect(serializer.toInflux(point, '_name')).to.equal('n num=1.1 ' + now.unixms());
+            expect(serializer.toInflux(point, '_name')).to.equal(`n num=1.1 ${now.unixms()}`);
         });
 
         it('serializes time as unix timestamps with milisecond precision', () => {

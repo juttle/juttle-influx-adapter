@@ -234,44 +234,44 @@ describe('influxql query building', () => {
 
                 it('is added into the query', () => {
                     var filter_ast = utils.parseFilter('key = 1');
-                    expect(builder.build({ from, to, nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
+                    expect(builder.build({ from, to, nameField: 'name' }, { filter_ast })).to.equal(`SELECT * FROM /.*/ WHERE "key" = 1 AND "time" >= '${from.valueOf()}' AND "time" < '${to.valueOf()}'`);
                 });
 
                 it('is added to empty filter', () => {
-                    expect(builder.build({ from, to, nameField: 'name' })).to.equal('SELECT * FROM /.*/ WHERE "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
+                    expect(builder.build({ from, to, nameField: 'name' })).to.equal(`SELECT * FROM /.*/ WHERE "time" >= '${from.valueOf()}' AND "time" < '${to.valueOf()}'`);
                 });
 
                 it('is added to binary expr', () => {
                     var filter_ast = utils.parseFilter('key = 1 and key = 2');
-                    expect(builder.build({ from, to, nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "key" = 2 AND "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
+                    expect(builder.build({ from, to, nameField: 'name' }, { filter_ast })).to.equal(`SELECT * FROM /.*/ WHERE "key" = 1 AND "key" = 2 AND "time" >= '${from.valueOf()}' AND "time" < '${to.valueOf()}'`);
                 });
 
                 it('is added to unary expr', () => {
                     var filter_ast = utils.parseFilter('not (key = 1)');
-                    expect(builder.build({ from, to, nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE "key" != 1 AND "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
+                    expect(builder.build({ from, to, nameField: 'name' }, { filter_ast })).to.equal(`SELECT * FROM /.*/ WHERE "key" != 1 AND "time" >= '${from.valueOf()}' AND "time" < '${to.valueOf()}'`);
                 });
 
                 it('with name field', () => {
                     var filter_ast = utils.parseFilter('name = "cpu"');
-                    expect(builder.build({ from, to, nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM "cpu" WHERE "time" >= \'' + from.valueOf() + '\' AND "time" < \'' + to.valueOf() + '\'');
+                    expect(builder.build({ from, to, nameField: 'name' }, { filter_ast })).to.equal(`SELECT * FROM "cpu" WHERE "time" >= '${from.valueOf()}' AND "time" < '${to.valueOf()}'`);
                 });
 
                 it('only from', () => {
-                    expect(builder.build({ from, nameField: 'name' })).to.equal('SELECT * FROM /.*/ WHERE "time" >= \'' + from.valueOf() + '\'');
+                    expect(builder.build({ from, nameField: 'name' })).to.equal(`SELECT * FROM /.*/ WHERE "time" >= '${from.valueOf()}'`);
                 });
 
                 it('only from and filter', () => {
                     var filter_ast = utils.parseFilter('key = 1');
-                    expect(builder.build({ from, nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "time" >= \'' + from.valueOf() + '\'');
+                    expect(builder.build({ from, nameField: 'name' }, { filter_ast })).to.equal(`SELECT * FROM /.*/ WHERE "key" = 1 AND "time" >= '${from.valueOf()}'`);
                 });
 
                 it('only to', () => {
-                    expect(builder.build({ to, nameField: 'name' })).to.equal('SELECT * FROM /.*/ WHERE "time" < \'' + to.valueOf() + '\'');
+                    expect(builder.build({ to, nameField: 'name' })).to.equal(`SELECT * FROM /.*/ WHERE "time" < '${to.valueOf()}'`);
                 });
 
                 it('only to and filter', () => {
                     var filter_ast = utils.parseFilter('key = 1');
-                    expect(builder.build({ to, nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE "key" = 1 AND "time" < \'' + to.valueOf() + '\'');
+                    expect(builder.build({ to, nameField: 'name' }, { filter_ast })).to.equal(`SELECT * FROM /.*/ WHERE "key" = 1 AND "time" < '${to.valueOf()}'`);
                 });
             });
         });
