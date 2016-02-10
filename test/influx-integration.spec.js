@@ -95,7 +95,7 @@ var DB = {
     },
 };
 
-describe('@live influxdb tests', () => {
+describe('@integration influxdb tests', () => {
     describe('read', () => {
         before((done) => {
             DB.drop().then(() => { return DB.create(); }).then(() => { return DB.insert(); }).finally(done);
