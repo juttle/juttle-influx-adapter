@@ -123,6 +123,22 @@ describe('@integration influxdb tests', () => {
             });
         });
 
+        it('reports error on invalid option', () => {
+            return check_juttle({
+                program: 'read influx -db "test" -from :0: -raw "SELECT * FROM cpu" -badOption true'
+            }).catch((err) => {
+                expect(err.message).to.include('unknown read influx option badOption');
+            });
+        });
+
+        it('reports error to before from', () => {
+            return check_juttle({
+                program: 'read influx -db "test" -from :0: -raw "SELECT * FROM cpu" -from :1d ago: -to :2d ago:'
+            }).catch((err) => {
+                expect(err.message).to.include('-to must not be earlier than -from');
+            });
+        });
+
         it('reports error with -raw and -from', () => {
             return check_juttle({
                 program: 'read influx -db "test" -from :0: -raw "SELECT * FROM cpu" | view logger'
