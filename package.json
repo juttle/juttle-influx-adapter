@@ -14,7 +14,8 @@
   "repository": "juttle/juttle-influx-adapter",
   "scripts": {
     "test": "mocha",
-    "lint": "eslint ."
+    "lint": "eslint --ignore-pattern=./coverage/ .",
+    "cov": "istanbul cover _mocha && istanbul check-coverage"
   },
   "dependencies": {
     "glob-to-regexp": "^0.1.0",
@@ -30,6 +31,7 @@
     "chai": "^3.4.1",
     "mocha": "^2.3.4",
     "eslint": "^1.10.3",
+    "istanbul": "^0.4.2",
     "bluebird-retry": "^0.5.2"
   },
   "engines": {

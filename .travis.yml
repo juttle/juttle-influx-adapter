@@ -26,7 +26,7 @@ before_script:
     - ./scripts/docker.sh start
 
 script:
-    - npm test
+    - npm run-script -s cov
 
 after_script:
     - ./scripts/docker.sh stop
