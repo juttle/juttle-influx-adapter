@@ -121,7 +121,7 @@ describe('serialization', () => {
             var endstr = vals.split(',')[1];
             var time   = endstr.split('=')[1];
 
-            expect(time).to.equal(end.unixms() + '');
+            expect(time).to.equal(String(end.unixms()));
         });
 
         it('serializes boolean values', () => {
