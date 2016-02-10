@@ -265,6 +265,41 @@ describe('@integration influxdb tests', () => {
                 });
             });
 
+            it('regexes on values return empty result set', () => {
+                return check_juttle({
+                    program: 'read influx -db "test"  -from :0: name = "cpu" value =~ /[0-4]/ | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(0);
+                });
+            });
+
+            it('globs on values return empty result set', () => {
+                return check_juttle({
+                    program: 'read influx -db "test"  -from :0: name = "cpu" value =~ "[0-4]" | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(0);
+                });
+            });
+
+            it('regex on tags', () => {
+                return check_juttle({
+                    program: 'read influx -db "test"  -from :0: name = "cpu" host =~ /host[0-4]/ | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(5);
+                    expect(res.sinks.logger[0].host).to.equal('host0');
+                    expect(res.sinks.logger[4].host).to.equal('host4');
+                });
+            });
+
+            it('glob on tags', () => {
+                return check_juttle({
+                    program: 'read influx -db "test"  -from :0: name = "cpu" host =~ "*os*5" | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(1);
+                    expect(res.sinks.logger[0].host).to.equal('host5');
+                });
+            });
+
             // Possibly bug in Influx, this actually returns all records
             it.skip('compound on tags and values', () => {
                 return check_juttle({
@@ -301,6 +336,44 @@ describe('@integration influxdb tests', () => {
                 }).then((res) => {
                     expect(res.sinks.logger.length).to.equal(5);
                     expect(res.sinks.logger[0].value).to.equal(5);
+                });
+            });
+        });
+
+        describe('string values', () => {
+            before((done) => {
+                let now = Date.now();
+                let payload = '';
+
+                for (let i = 0; i < 10; i++) {
+                    payload += `regex,host=host${i} value="string${i}" ${DB._t0 + i * DB._dt}\n`;
+                }
+
+                DB.insert(payload).finally(done);
+            });
+
+            it('equality', () => {
+                return check_juttle({
+                    program: 'read influx -db "test" -from :0: name = "regex" value = "string1" | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(1);
+                    expect(res.sinks.logger[0].value).to.equal('string1');
+                });
+            });
+
+            it('glob search returns empty result set', () => {
+                return check_juttle({
+                    program: 'read influx -db "test" -from :0: name = "regex" value =~ "string[0-4]" | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(0);
+                });
+            });
+
+            it('regex search returns empty result set', () => {
+                return check_juttle({
+                    program: 'read influx -db "test" -from :0: name = "regex" value =~ /string[0-4]/ | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(0);
                 });
             });
         });
