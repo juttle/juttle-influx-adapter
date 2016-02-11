@@ -155,6 +155,16 @@ describe('serialization', () => {
             expect(serializer.toInflux.bind(serializer, point, '_name')).to.throw(Error, /not supported/);
         });
 
+        it('serializing nulls throws an error', () => {
+            var point = { nil: null, _name: 'n' };
+            expect(serializer.toInflux.bind(serializer, point, '_name')).to.throw(Error, /not supported/);
+        });
+
+        it('serializing regexes throws an error', () => {
+            var point = { reg: /abcd/, _name: 'n' };
+            expect(serializer.toInflux.bind(serializer, point, '_name')).to.throw(Error, /not supported/);
+        });
+
         describe('nameField option', () => {
             it('defaults to name', () => {
                 var serializer = new Serializer();
