@@ -378,6 +378,29 @@ describe('@integration influxdb tests', () => {
             });
         });
 
+        describe('live', () => {
+            before((done) => {
+                let now = Date.now();
+                let payload = '';
+
+                for (let i = 0; i < 10; i++) {
+                    payload += `live,host=host${i} value=${i} ${now + 500 + i * 50}\n`;
+                }
+
+                DB.insert(payload).finally(done);
+            });
+
+            it('successfully retrieves live points', () => {
+                return check_juttle({
+                    program: 'read influx -db "test" -from :now: -to :end: -every :0.1s: name = "live" | view logger',
+                    realtime: true
+                }, 1200).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(10);
+                    expect(res.sinks.logger[9].value).to.equal(9);
+                });
+            });
+        });
+
         describe('nameField', () => {
             before((done) => {
                 var payload = `namefield,host=hostX,name=conflict value=1 ${DB._t0}`;
