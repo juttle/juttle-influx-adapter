@@ -18,6 +18,10 @@ node_js:
     - '4.2'
     - '5.0'
 
+env:
+    - INFLUX_VERSION=0.9
+    - INFLUX_VERSION=0.10
+
 services:
     - docker
 
