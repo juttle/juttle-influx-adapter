@@ -131,6 +131,14 @@ describe('@integration influxdb tests', () => {
             });
         });
 
+        it('reports error with -raw and filter', () => {
+            return check_juttle({
+                program: 'read influx -db "test" -from :0: -raw "SELECT * FROM cpu" value = 1 | view logger'
+            }).catch((err) => {
+                expect(err.message).to.include('option raw can only be used with empty filter');
+            });
+        });
+
         it('basic select', () => {
             return check_juttle({
                 program: 'read influx -db "test" -from :0: name = "cpu" | view logger'
