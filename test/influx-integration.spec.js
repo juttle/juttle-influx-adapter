@@ -354,12 +354,31 @@ describe('@integration influxdb tests', () => {
                 });
             });
 
+            it('in operator on tags', () => {
+                return check_juttle({
+                    program: 'read influx -db "test" -from :0: name = "cpu" and host in ["host1", "host5"] | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(2);
+                    expect(res.sinks.logger[0].host).to.equal("host1");
+                    expect(res.sinks.logger[1].host).to.equal("host5");
+                });
+            });
+
             it('not in', () => {
                 return check_juttle({
                     program: 'read influx -db "test" -from :0: name = "cpu" and (not ( value in [0, 1, 2, 3, 4] )) | view logger'
                 }).then((res) => {
                     expect(res.sinks.logger.length).to.equal(5);
                     expect(res.sinks.logger[0].value).to.equal(5);
+                });
+            });
+
+            it('not in on tags', () => {
+                return check_juttle({
+                    program: 'read influx -db "test" -from :0: name = "cpu" and (not ( host in ["host0", "host1", "host2", "host3", "host4"] )) | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(5);
+                    expect(res.sinks.logger[0].host).to.equal("host5");
                 });
             });
         });
