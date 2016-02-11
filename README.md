@@ -5,7 +5,7 @@
 InfluxDB adapter for the [Juttle data flow
 language](https://github.com/juttle/juttle), with read & write support.
 
-Currently supports InfluxDB 0.9.
+Currently supports InfluxDB 0.9 and 0.10.
 
 ## Examples
 
