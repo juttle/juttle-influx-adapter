@@ -1,7 +1,10 @@
 #!/bin/bash
 
 NAME="influxdb"
-VER="1"
+VER=$(printenv INFLUX_VERSION)
+
+[ -z "$VER" ] && VER="0.10"
+
 CONTAINER="juttle/$NAME:$VER"
 
 CMD="$1"
