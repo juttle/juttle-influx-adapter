@@ -157,4 +157,15 @@ describe('query linting', () => {
             expect(linter.lint.bind(linter, ast, { nameField: 'name' })).to.throw(/Filtering by time is not supported/);
         });
     });
+
+    it('doesnt allow FTS filters', () => {
+        var tests = [
+            '"some string"',
+        ];
+
+        _.each(tests, (test) => {
+            var ast = utils.parseFilter(test);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' })).to.throw(/Full text search is not supported/);
+        });
+    });
 });
