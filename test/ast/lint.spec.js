@@ -158,6 +158,19 @@ describe('query linting', () => {
         });
     });
 
+    it('doesnt allow null filters', () => {
+        var tests = [
+            'field != null',
+            'field = null',
+            'field1 = null or field2 = "1"',
+        ];
+
+        _.each(tests, (test) => {
+            var ast = utils.parseFilter(test);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' })).to.throw(/Filtering null values is not supported/);
+        });
+    });
+
     it('doesnt allow FTS filters', () => {
         var tests = [
             '"some string"',
