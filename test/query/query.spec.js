@@ -108,11 +108,6 @@ describe('influxql query building', () => {
                 expect(builder.build({ nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE "key" = 1');
             });
 
-            it('simple filter null', () => {
-                var filter_ast = utils.parseFilter('key = null');
-                expect(builder.build({ nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE "key" = null');
-            });
-
             it('implicit and', () => {
                 var filter_ast = utils.parseFilter('key1 = "val1" key2 = "val2"');
                 expect(builder.build({ nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE "key1" = \'val1\' AND "key2" = \'val2\'');
