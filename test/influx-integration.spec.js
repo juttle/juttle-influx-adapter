@@ -125,9 +125,9 @@ describe('@integration influxdb tests', () => {
 
         it('reports error on invalid option', () => {
             return check_juttle({
-                program: 'read influx -db "test" -from :0: -raw "SELECT * FROM cpu" -badOption true'
+                program: 'read influx -db "test" -raw "SELECT * FROM cpu" -badOption true'
             }).catch((err) => {
-                expect(err.message).to.include('unknown read influx option badOption');
+                expect(err.message).to.include('unknown read-influx option badOption');
             });
         });
 
@@ -135,7 +135,7 @@ describe('@integration influxdb tests', () => {
             return check_juttle({
                 program: 'read influx -db "test" -from :0: -raw "SELECT * FROM cpu" -from :1d ago: -to :2d ago:'
             }).catch((err) => {
-                expect(err.message).to.include('-to must not be earlier than -from');
+                expect(err.code).to.equal('RT-TO-BEFORE-FROM-MOMENT-ERROR');
             });
         });
 
@@ -245,7 +245,7 @@ describe('@integration influxdb tests', () => {
             return check_juttle({
                 program: `read influx -db "test" -from :${from.toISOString()}: -to :${to.toISOString()}: name = "cpu" | view logger`
             }).catch((err) => {
-                expect(err.message).to.include('-to must not be earlier than -from');
+                expect(err.code).to.include('RT-TO-BEFORE-FROM-MOMENT-ERROR');
             });
         });
 
