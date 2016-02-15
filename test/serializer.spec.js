@@ -2,7 +2,7 @@
 
 var expect = require('chai').expect;
 var Serializer = require('../lib/serializer');
-var JuttleMoment = require('juttle/lib/moment').JuttleMoment;
+var JuttleMoment = require('juttle/lib/runtime/types/juttle-moment');
 
 describe('serialization', () => {
     describe('to juttle', () => {

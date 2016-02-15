@@ -2,7 +2,7 @@
 
 var expect = require('chai').expect;
 var QueryBuilder = require('../../lib/query');
-var JuttleMoment = require('juttle/lib/moment').JuttleMoment;
+var JuttleMoment = require('juttle/lib/runtime/types/juttle-moment');
 var utils = require('../test_utils');
 var _ = require('underscore');
 
