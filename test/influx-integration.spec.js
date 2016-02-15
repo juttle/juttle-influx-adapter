@@ -27,10 +27,10 @@ var influx_api_url = {
     pathname: '/'
 };
 
-var Juttle = require('juttle/lib/runtime').Juttle;
-Juttle.adapters.register('influx', influx({
+var adapters = require('juttle/lib/runtime/adapters');
+adapters.register('influx', influx({
     url: url.format(influx_api_url)
-}, Juttle));
+}));
 
 /* DB utils */
 var DB = {
