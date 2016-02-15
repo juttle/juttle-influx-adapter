@@ -135,7 +135,7 @@ describe('@integration influxdb tests', () => {
             return check_juttle({
                 program: 'read influx -db "test" -from :0: -raw "SELECT * FROM cpu" -from :1d ago: -to :2d ago:'
             }).catch((err) => {
-                expect(err.code).to.equal('RT-TO-BEFORE-FROM-MOMENT-ERROR');
+                expect(err.code).to.equal('TO-BEFORE-FROM-MOMENT-ERROR');
             });
         });
 
@@ -245,7 +245,7 @@ describe('@integration influxdb tests', () => {
             return check_juttle({
                 program: `read influx -db "test" -from :${from.toISOString()}: -to :${to.toISOString()}: name = "cpu" | view logger`
             }).catch((err) => {
-                expect(err.code).to.include('RT-TO-BEFORE-FROM-MOMENT-ERROR');
+                expect(err.code).to.include('TO-BEFORE-FROM-MOMENT-ERROR');
             });
         });
 
