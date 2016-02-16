@@ -10,7 +10,7 @@ var utils = require('../test_utils');
 class StripMeta extends ASTVisitor {
     visit(node) {
         delete(node.location);
-        delete(node.text);
+        delete(node.source);
         delete(node.d);
         this[`visit${node.type}`].apply(this, arguments);
         return node;
