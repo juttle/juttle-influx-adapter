@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/juttle/juttle-influx-adapter.svg)](https://travis-ci.org/juttle/juttle-influx-adapter)
 
-InfluxDB adapter for the [Juttle data flow
+[InfluxDB](https://github.com/influxdata/influxdb) adapter for the [Juttle data flow
 language](https://github.com/juttle/juttle), with read & write support.
 
 Currently supports InfluxDB 0.9 and 0.10.
@@ -73,7 +73,7 @@ key to include the username and password:
 
 ### Read options
 
-When reading data, most of the InfluxQL SELECT syntax is expressible through Juttle filter expressions.
+When reading data, most of the InfluxQL SELECT syntax is expressible through Juttle [filter expressions](http://juttle.github.io/juttle/concepts/filtering/).
 
 Alternatively, raw queries are also available as a fallback.
 
@@ -87,6 +87,16 @@ Name | Type | Required | Description
 `nameField` | string | no | if specified, measurement name will be saved in a point field with this name (default: 'name')
 `from` | moment | no | select points after this time (inclusive)
 `to`   | moment | no | select points before this time (exclusive)
+
+The filter expressions can be placed after the above options in `read influx`. Supported filters are:
+
+- `fieldname = value` for both tags and field values (also, `!=`, and `<`/`>` for numbers)
+- `fieldname ~ '*glob*'` wildcard matching (also, `!~`) for string fields
+- `fieldname =~ /regex/` regex matching (also, `!~`) for string fields
+- `fieldname in [v1, v2]` array inclusion
+- combining filter expressions with `AND`, `OR`, `NOT`
+
+Influx adapter does not support full text search, or [nullness checks](https://github.com/juttle/juttle-influx-adapter/issues/73).
 
 ### Write options
 
@@ -109,6 +119,19 @@ Note: when storing points, the following conventions are used:
 2. InfluxDB distinguishes between integers and floating point numeric types. By
    default, the adapter stores all numeric fields as floats. This can be changed
    by enumerating integer fields via `intFields` option.
+
+### Optimizations
+
+Whenever the influx adapter can shape the entire Juttle flowgraph or its portion into an InfluxDB query, it will do so, sending the execution to InfluxDB, so only the matching data will come back into Juttle runtime. The portion of the program expressed in `read influx` is always executed as an InfluxDB query; the downstream Juttle processors may be optimized as well.
+
+List of optimized operations:
+
+- any filter expression as part of `read influx` (note: `read influx | filter ...` is not optimized)
+- `head` or `tail`
+
+Other operations such as [`reduce`](https://github.com/juttle/juttle-influx-adapter/issues/79) and [`sort`](https://github.com/juttle/juttle-influx-adapter/issues/78) are not currently optimized.
+
+In case of unexpected behavior with optimized reads, add `-optimize false` option to `read influx` to disable optimizations, and kindly report the problem as a GitHub issue.
 
 ## Contributing
 
