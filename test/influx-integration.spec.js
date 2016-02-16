@@ -374,6 +374,14 @@ describe('@integration influxdb tests', () => {
                 });
             });
 
+            it('in operator empty set', () => {
+                return check_juttle({
+                    program: 'read influx -db "test" -from :0: name = "cpu" and value in [] | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(0);
+                });
+            });
+
             it('in operator on tags', () => {
                 return check_juttle({
                     program: 'read influx -db "test" -from :0: name = "cpu" and host in ["host1", "host5"] | view logger'
