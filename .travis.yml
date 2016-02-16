@@ -24,7 +24,9 @@ services:
     - docker
 
 before_script:
+    - rm -rf node_modules/juttle
     - npm install $JUTTLE_PACKAGE
+    - pushd node_modules/juttle; npm install; popd
     - ./scripts/docker.sh start
 
 script:
