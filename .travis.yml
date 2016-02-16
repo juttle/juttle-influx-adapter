@@ -1,9 +1,5 @@
 language: node_js
 
-cache:
-  directories:
-    - node_modules
-
 addons:
   apt:
     sources:
@@ -19,14 +15,18 @@ node_js:
     - '5.0'
 
 env:
-    - INFLUX_VERSION=0.9
-    - INFLUX_VERSION=0.10
+    - INFLUX_VERSION=0.9 JUTTLE_PACKAGE=juttle/juttle
+    - INFLUX_VERSION=0.9 JUTTLE_PACKAGE=juttle@0.4.x
+    - INFLUX_VERSION=0.10 JUTTLE_PACKAGE=juttle/juttle
+    - INFLUX_VERSION=0.10 JUTTLE_PACKAGE=juttle@0.4.x
 
 services:
     - docker
 
 before_script:
-    - npm install juttle@0.4.x
+    - rm -rf node_modules/juttle
+    - npm install $JUTTLE_PACKAGE
+    - pushd node_modules/juttle; npm install; popd
     - ./scripts/docker.sh start
 
 script:
