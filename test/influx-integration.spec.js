@@ -455,6 +455,60 @@ describe('@integration influxdb tests', () => {
             });
         });
 
+        describe('lag', () => {
+            it('successfully retrieves lagging points', () => {
+                // Start inserting points every 0.1s with 0.5s timestamp lag
+                let i = 0;
+                let insert = setInterval(() => {
+                    if (i === 10) {
+                        clearInterval(insert);
+                        return;
+                    }
+
+                    let now = Date.now();
+                    let payload = `lag,host=host${i} value=${i} ${now - 500}\n`
+
+                    DB.insert(payload);
+
+                    i++;
+                }, 100);
+
+                return check_juttle({
+                    program: 'read influx -db "test" -from :1s ago: -to :end: -every :0.1s: -lag :0.75s: name = "lag" | view logger',
+                    realtime: true
+                }, 1700).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(10);
+                    expect(res.sinks.logger[9].value).to.equal(9);
+                });
+            });
+
+            it('successfully retrieves current points', () => {
+                // Start inserting points every 0.1s without lag
+                let i = 0;
+                let insert = setInterval(() => {
+                    if (i === 10) {
+                        clearInterval(insert);
+                        return;
+                    }
+
+                    let now = Date.now();
+                    let payload = `lagnow,host=host${i} value=${i} ${now}\n`
+
+                    DB.insert(payload);
+
+                    i++;
+                }, 100);
+
+                return check_juttle({
+                    program: 'read influx -db "test" -from :1s ago: -to :end: -every :0.1s: -lag :0.5s: name = "lagnow" | view logger',
+                    realtime: true
+                }, 1700).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(10);
+                    expect(res.sinks.logger[9].value).to.equal(9);
+                });
+            });
+        });
+
         describe('nameField', () => {
             before((done) => {
                 var payload = `namefield,host=hostX,name=conflict value=1 ${DB._t0}`;
