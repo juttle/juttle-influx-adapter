@@ -324,7 +324,7 @@ describe('@integration influxdb tests', () => {
                 });
             });
 
-            // Possibly bug in Influx, this actually returns all records
+            // Bug: https://github.com/influxdata/influxdb/issues/5152
             it.skip('compound on tags and values', () => {
                 return check_juttle({
                     program: 'read influx -db "test" -from :0: name = "cpu" and (value = 1 or host = "host5") | view logger'
@@ -332,6 +332,17 @@ describe('@integration influxdb tests', () => {
                     expect(res.sinks.logger.length).to.equal(2);
                     expect(res.sinks.logger[0].value).to.equal(1);
                     expect(res.sinks.logger[1].host).to.equal('host5');
+                });
+            });
+
+            // Bug: https://github.com/influxdata/influxdb/issues/5152
+            it.skip('compound inequalities on tags and values', () => {
+                return check_juttle({
+                    program: 'read influx -db "test" -from :0: name = "cpu" and (value < 1 or host > "host8") | view logger'
+                }).then((res) => {
+                    expect(res.sinks.logger.length).to.equal(2);
+                    expect(res.sinks.logger[0].value).to.equal(0);
+                    expect(res.sinks.logger[1].host).to.equal('host9');
                 });
             });
 
