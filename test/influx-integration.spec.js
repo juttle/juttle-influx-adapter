@@ -3,6 +3,7 @@
 var _ = require('underscore');
 var expect = require('chai').expect;
 var url = require('url');
+var path = require('path');
 
 var Promise = require('bluebird');
 var retry = require('bluebird-retry');
@@ -10,10 +11,8 @@ var retry = require('bluebird-retry');
 var request = Promise.promisifyAll(require('request'));
 request.async = Promise.promisify(request);
 
-var juttle_test_utils = require('juttle/test/runtime/specs/juttle-test-utils');
+var juttle_test_utils = require('juttle/test').utils;
 var check_juttle = juttle_test_utils.check_juttle;
-
-var influx = require('../index.js');
 
 var retry_options = {
     interval: 50,
@@ -27,10 +26,12 @@ var influx_api_url = {
     pathname: '/'
 };
 
-var adapters = require('juttle/lib/runtime/adapters');
-adapters.register('influx', influx({
-    url: url.format(influx_api_url)
-}));
+juttle_test_utils.configureAdapter({
+    influx: {
+        path: path.resolve(__dirname, '..'),
+        url: url.format(influx_api_url)
+    }
+});
 
 /* DB utils */
 var DB = {

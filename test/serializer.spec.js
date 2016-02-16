@@ -1,11 +1,14 @@
 'use strict';
 
 var expect = require('chai').expect;
-var Serializer = require('../lib/serializer');
-var JuttleMoment = require('juttle/lib/runtime/types/juttle-moment');
+var withAdapterAPI = require('juttle/test').utils.withAdapterAPI;
 
-describe('serialization', () => {
-    describe('to juttle', () => {
+withAdapterAPI(() => {
+    var Serializer = require('../lib/serializer');
+    /* global JuttleAdapterAPI */
+    var JuttleMoment = JuttleAdapterAPI.types.JuttleMoment;
+
+    describe('serialization to juttle', () => {
         var serializer = new Serializer();
 
         it('requires all args', () => {
@@ -40,7 +43,7 @@ describe('serialization', () => {
         });
     });
 
-    describe('to influx', () => {
+    describe('serializaton to influx', () => {
         var serializer = new Serializer();
 
         it('requires name', () => {

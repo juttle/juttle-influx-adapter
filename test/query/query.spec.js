@@ -1,15 +1,18 @@
 'use strict';
 
 var expect = require('chai').expect;
-var QueryBuilder = require('../../lib/query');
-var JuttleMoment = require('juttle/lib/runtime/types/juttle-moment');
 var utils = require('../test_utils');
 var _ = require('underscore');
 
-describe('influxql query building', () => {
+var withAdapterAPI = require('juttle/test').utils.withAdapterAPI;
+
+withAdapterAPI(() => {
+    var QueryBuilder = require('../../lib/query');
+    /* global JuttleAdapterAPI */
+    var JuttleMoment = JuttleAdapterAPI.types.JuttleMoment;
     var builder = new QueryBuilder();
 
-    describe('SELECT', () => {
+    describe('influx query building', () => {
         it('basic query', () => {
             expect(builder.build({ nameField: 'name' })).to.equal('SELECT * FROM /.*/');
         });
