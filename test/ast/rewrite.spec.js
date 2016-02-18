@@ -31,9 +31,9 @@ var check_rewrite = function(from, to) {
 describe('rewriter', () => {
     it('handles key1 in []', () => {
         var tests = [
-            ['(key1 in [])', 'false'],
-            ['key1 in []', 'false'],
-            ['key1 in [] and key1 = "val1"', 'false and key1 = "val1"']
+            ['(key1 in [])', '0 = 1'],
+            ['key1 in []', '0 = 1'],
+            ['key1 in [] and key1 = "val1"', '0 = 1 and key1 = "val1"']
         ];
         _.each(tests, (test) => check_rewrite(test[0], test[1]));
     });

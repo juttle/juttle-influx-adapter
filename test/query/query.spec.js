@@ -153,7 +153,7 @@ describe('influxql query building', () => {
 
             it('in operator with empty array is handled', () => {
                 var filter_ast = utils.parseFilter('key1 in []');
-                expect(builder.build({ nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE false');
+                expect(builder.build({ nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE 0 = 1');
             });
 
             it('handles compound ops', () => {
