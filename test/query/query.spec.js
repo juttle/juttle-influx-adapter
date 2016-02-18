@@ -141,7 +141,7 @@ withAdapterAPI(() => {
                     { filter_ast: 'key1 in ["val1"]', query: 'SELECT * FROM /.*/ WHERE "key1" = \'val1\'' },
                     { filter_ast: 'key1 in ["val1", "val2"]', query: 'SELECT * FROM /.*/ WHERE "key1" = \'val1\' OR "key1" = \'val2\'' },
                     { filter_ast: 'key1 in ["val1", "val2", "val3"]', query: 'SELECT * FROM /.*/ WHERE ("key1" = \'val1\' OR "key1" = \'val2\') OR "key1" = \'val3\'' },
-                ]
+                ];
 
                 _.each(tests, (test) => {
                     var filter_ast = utils.parseFilter(test.filter_ast);

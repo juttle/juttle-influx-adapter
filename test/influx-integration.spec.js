@@ -405,7 +405,6 @@ describe('@integration influxdb tests', () => {
 
         describe('string values', () => {
             before((done) => {
-                let now = Date.now();
                 let payload = '';
 
                 for (let i = 0; i < 10; i++) {
