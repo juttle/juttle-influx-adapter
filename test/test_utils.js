@@ -8,7 +8,7 @@ var simplifier = new FilterSimplifier();
 module.exports = {
     parseFilter(code) {
         var root = parser.parseFilter(code);
-        root.ast = semantic.sa_expr(root.ast);
+        semantic.sa_expr(root.ast);
         root.ast = simplifier.simplify(root.ast);
         return root;
     }
