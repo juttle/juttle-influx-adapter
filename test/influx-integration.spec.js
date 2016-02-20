@@ -155,6 +155,14 @@ describe('@integration influxdb tests', () => {
             });
         });
 
+        it('reports error without -from, -to or -last', () => {
+            return check_juttle({
+                program: 'read influx -db "test" value = 1 | view logger'
+            }).catch((err) => {
+                expect(err.message).to.include('One of -from, -to, or -last must be specified to define a query time range');
+            });
+        });
+
         it('basic select', () => {
             return check_juttle({
                 program: 'read influx -db "test" -from :0: name = "cpu" | view logger'
