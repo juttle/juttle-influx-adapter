@@ -9,7 +9,7 @@ Currently supports InfluxDB 0.9 and 0.10.
 
 ## Examples
 
-Read entries from the `cpu` measurement where the `host` tag is `www123` and the default limit of 1000:
+Read entries from the `cpu` measurement where the `host` tag is `www123`:
 
 ```juttle
 read influx -db 'test' name='cpu' host='www123' | view text
@@ -18,7 +18,7 @@ read influx -db 'test' name='cpu' host='www123' | view text
 Perform an equivalent query using the -raw option:
 
 ```juttle
-read influx -db 'test' -raw "SELECT * FROM cpu where host='www123 LIMIT 1000' | view text
+read influx -db 'test' -raw "SELECT * FROM cpu where host='www123' | view text
 ```
 
 Write a single point into the `cpu` measurement:
@@ -81,8 +81,6 @@ Name | Type | Required | Description
 -----|------|----------|-------------
 `db`   | string | yes | database to use
 `raw`  | string | no  | send a raw InfluxQL query to InfluxDB
-`offset` | integer| no | record offset
-`limit`  | integer | no | query limit (default: 1000)
 `fields` | string | no | fields to select from the measurement (default: all)
 `nameField` | string | no | if specified, measurement name will be saved in a point field with this name (default: 'name')
 `from` | moment | no | select points after this time (inclusive)
