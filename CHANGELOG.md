@@ -22,7 +22,7 @@ Released 2016-02-24
 
 Released 2016-02-03
 
-- Requires Juttle 0.4.0
+- Requires Juttle 0.4.0.
 
 - Naming change - concept of a 'measurement' is consolidated under 'name'.
 
@@ -38,14 +38,14 @@ Released 2016-02-03
 
 Released 2016-01-20
 
-- Requires Juttle 0.3.0
+- Requires Juttle 0.3.0.
 
-- During write, points with object/array field values are dropped and emit a warning [[#31](https://github.com/juttle/juttle-influx-adapter/issues/31)]
+- During write, points with object/array field values are dropped and emit a warning [[#31](https://github.com/juttle/juttle-influx-adapter/issues/31)].
 
 ## 0.2.0
 
 Released 2016-01-07
 
-- Requires Juttle 0.2.0
+- Requires Juttle 0.2.0.
 
 - Document HTTP authentication support [[#22](https://github.com/juttle/juttle-influx-adapter/issues/22)].
