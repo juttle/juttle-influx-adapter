@@ -16,9 +16,9 @@ node_js:
 
 env:
     - INFLUX_VERSION=0.9 JUTTLE_PACKAGE=juttle/juttle
-#    - INFLUX_VERSION=0.9 JUTTLE_PACKAGE=juttle@0.4.x
+#    - INFLUX_VERSION=0.9 JUTTLE_PACKAGE=juttle@0.5.x
     - INFLUX_VERSION=0.10 JUTTLE_PACKAGE=juttle/juttle
-#    - INFLUX_VERSION=0.10 JUTTLE_PACKAGE=juttle@0.4.x
+#    - INFLUX_VERSION=0.10 JUTTLE_PACKAGE=juttle@0.5.x
 
 services:
     - docker
