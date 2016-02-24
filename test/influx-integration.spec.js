@@ -3,6 +3,7 @@
 var _ = require('underscore');
 var expect = require('chai').expect;
 var url = require('url');
+var path = require('path');
 
 var Promise = require('bluebird');
 var retry = require('bluebird-retry');
@@ -10,10 +11,8 @@ var retry = require('bluebird-retry');
 var request = Promise.promisifyAll(require('request'));
 request.async = Promise.promisify(request);
 
-var juttle_test_utils = require('juttle/test/runtime/specs/juttle-test-utils');
+var juttle_test_utils = require('juttle/test').utils;
 var check_juttle = juttle_test_utils.check_juttle;
-
-var influx = require('../index.js');
 
 var retry_options = {
     interval: 50,
@@ -27,10 +26,12 @@ var influx_api_url = {
     pathname: '/'
 };
 
-var Juttle = require('juttle/lib/runtime').Juttle;
-Juttle.adapters.register('influx', influx({
-    url: url.format(influx_api_url)
-}, Juttle));
+juttle_test_utils.configureAdapter({
+    influx: {
+        path: path.resolve(__dirname, '..'),
+        url: url.format(influx_api_url)
+    }
+});
 
 /* DB utils */
 var DB = {
@@ -125,9 +126,9 @@ describe('@integration influxdb tests', () => {
 
         it('reports error on invalid option', () => {
             return check_juttle({
-                program: 'read influx -db "test" -from :0: -raw "SELECT * FROM cpu" -badOption true'
+                program: 'read influx -db "test" -raw "SELECT * FROM cpu" -badOption true'
             }).catch((err) => {
-                expect(err.message).to.include('unknown read influx option badOption');
+                expect(err.message).to.include('unknown read-influx option badOption');
             });
         });
 
@@ -135,7 +136,7 @@ describe('@integration influxdb tests', () => {
             return check_juttle({
                 program: 'read influx -db "test" -from :0: -raw "SELECT * FROM cpu" -from :1d ago: -to :2d ago:'
             }).catch((err) => {
-                expect(err.message).to.include('-to must not be earlier than -from');
+                expect(err.code).to.equal('TO-BEFORE-FROM-MOMENT-ERROR');
             });
         });
 
@@ -245,7 +246,7 @@ describe('@integration influxdb tests', () => {
             return check_juttle({
                 program: `read influx -db "test" -from :${from.toISOString()}: -to :${to.toISOString()}: name = "cpu" | view logger`
             }).catch((err) => {
-                expect(err.message).to.include('-to must not be earlier than -from');
+                expect(err.code).to.include('TO-BEFORE-FROM-MOMENT-ERROR');
             });
         });
 

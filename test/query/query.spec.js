@@ -1,15 +1,18 @@
 'use strict';
 
 var expect = require('chai').expect;
-var QueryBuilder = require('../../lib/query');
-var JuttleMoment = require('juttle/lib/moment').JuttleMoment;
 var utils = require('../test_utils');
 var _ = require('underscore');
 
-describe('influxql query building', () => {
+var withAdapterAPI = require('juttle/test').utils.withAdapterAPI;
+
+withAdapterAPI(() => {
+    var QueryBuilder = require('../../lib/query');
+    /* global JuttleAdapterAPI */
+    var JuttleMoment = JuttleAdapterAPI.types.JuttleMoment;
     var builder = new QueryBuilder();
 
-    describe('SELECT', () => {
+    describe('influx query building', () => {
         it('basic query', () => {
             expect(builder.build({ nameField: 'name' })).to.equal('SELECT * FROM /.*/');
         });
@@ -153,7 +156,7 @@ describe('influxql query building', () => {
 
             it('in operator with empty array is handled', () => {
                 var filter_ast = utils.parseFilter('key1 in []');
-                expect(builder.build({ nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE false');
+                expect(builder.build({ nameField: 'name' }, { filter_ast })).to.equal('SELECT * FROM /.*/ WHERE 0 = 1');
             });
 
             it('handles compound ops', () => {
