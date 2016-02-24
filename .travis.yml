@@ -12,13 +12,13 @@ before_install:
 
 node_js:
     - '4.2'
-    - '5.0'
+#    - '5.0'
 
 env:
     - INFLUX_VERSION=0.9 JUTTLE_PACKAGE=juttle/juttle
-    - INFLUX_VERSION=0.9 JUTTLE_PACKAGE=juttle@0.4.x
+#    - INFLUX_VERSION=0.9 JUTTLE_PACKAGE=juttle@0.4.x
     - INFLUX_VERSION=0.10 JUTTLE_PACKAGE=juttle/juttle
-    - INFLUX_VERSION=0.10 JUTTLE_PACKAGE=juttle@0.4.x
+#    - INFLUX_VERSION=0.10 JUTTLE_PACKAGE=juttle@0.4.x
 
 services:
     - docker
