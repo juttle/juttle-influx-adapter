@@ -22,8 +22,7 @@ services:
     - docker
 
 before_script:
-    - git clone https://${GITHUB_AUTH}:x-oauth-basic@github.com/juttle/juttle.git
-    - pushd juttle ; npm install ; npm link ; popd
+    - npm install juttle@^0.4.0
     - ./scripts/docker.sh start
 
 script:
