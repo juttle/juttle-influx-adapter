@@ -474,7 +474,7 @@ describe('@integration influxdb tests', () => {
                     }
 
                     let now = Date.now();
-                    let payload = `lag,host=host${i} value=${i} ${now - 500}\n`
+                    let payload = `lag,host=host${i} value=${i} ${now - 500}\n`;
 
                     DB.insert(payload);
 
@@ -500,7 +500,7 @@ describe('@integration influxdb tests', () => {
                     }
 
                     let now = Date.now();
-                    let payload = `lagnow,host=host${i} value=${i} ${now}\n`
+                    let payload = `lagnow,host=host${i} value=${i} ${now}\n`;
 
                     DB.insert(payload);
 
