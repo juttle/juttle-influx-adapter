@@ -3,11 +3,26 @@
 This file documents all notable changes to Juttle Influx Adapter. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## 0.5.0
+
+Released 2016-02-24
+
+- Requires Juttle 0.5.0.
+
+- Juttle is no longer included in `peerDependencies`, so manual installation is required.
+
+- InfluxDB 0.10 support.
+
+- `limit` and `offset` options were removed and `head` and `tail` procesors should
+  be used to paginate the stream. Also, `head` and `tail` are now optimized by `read`.
+
+- Writing `null` values now results in an error.
+
 ## 0.4.0
 
 Released 2016-02-03
 
-- Requires Juttle 0.4.0
+- Requires Juttle 0.4.0.
 
 - Naming change - concept of a 'measurement' is consolidated under 'name'.
 
@@ -23,14 +38,14 @@ Released 2016-02-03
 
 Released 2016-01-20
 
-- Requires Juttle 0.3.0
+- Requires Juttle 0.3.0.
 
-- During write, points with object/array field values are dropped and emit a warning [[#31](https://github.com/juttle/juttle-influx-adapter/issues/31)]
+- During write, points with object/array field values are dropped and emit a warning [[#31](https://github.com/juttle/juttle-influx-adapter/issues/31)].
 
 ## 0.2.0
 
 Released 2016-01-07
 
-- Requires Juttle 0.2.0
+- Requires Juttle 0.2.0.
 
 - Document HTTP authentication support [[#22](https://github.com/juttle/juttle-influx-adapter/issues/22)].
