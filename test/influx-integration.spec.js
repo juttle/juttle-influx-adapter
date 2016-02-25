@@ -186,17 +186,9 @@ describe('@integration influxdb tests', () => {
             });
         });
 
-        it('limit', () => {
-            return check_juttle({
-                program: 'read influx -db "test" -from :0: -limit 5 name = "cpu" | view logger'
-            }).then((res) => {
-                expect(res.sinks.logger.length).to.equal(5);
-            });
-        });
-
         it('fields', () => {
             return check_juttle({
-                program: 'read influx -db "test" -from :0: -limit 1 -fields "value" name = "cpu" | view logger'
+                program: 'read influx -db "test" -from :0: -fields "value" name = "cpu" | head 1 | view logger'
             }).then((res) => {
                 expect(_.keys(res.sinks.logger[0])).to.deep.equal(['time', 'value', 'name']);
                 expect(res.sinks.logger[0].value).to.equal(0);
@@ -205,7 +197,7 @@ describe('@integration influxdb tests', () => {
 
         it('fields reports error if values not included', () => {
             return check_juttle({
-                program: 'read influx -db "test" -from :0: -limit 1 -fields "host" name = "cpu" | view logger'
+                program: 'read influx -db "test" -from :0: -fields "host" name = "cpu" | head 1 | view logger'
             }).then((res) => {
                 expect(res.errors[0]).to.include('at least one field in select clause');
             });
@@ -525,7 +517,7 @@ describe('@integration influxdb tests', () => {
 
             it('overwrites the name by default and triggers a warning', () => {
                 return check_juttle({
-                    program: 'read influx -db "test" -from :0: -limit 1 name = "namefield" | view logger'
+                    program: 'read influx -db "test" -from :0: name = "namefield" | head 1 | view logger'
                 }).then((res) => {
                     expect(res.warnings).to.deep.equal(['internal error Points contain name field, use nameField option to make the field accessible.']);
                     expect(res.sinks.logger[0].name).to.equal('namefield');
@@ -534,7 +526,7 @@ describe('@integration influxdb tests', () => {
 
             it('selects metric and stores its name based on nameField', () => {
                 return check_juttle({
-                    program: 'read influx -db "test" -from :0: -nameField "metric" -limit 1 metric = "namefield" | view logger'
+                    program: 'read influx -db "test" -from :0: -nameField "metric" metric = "namefield" | head 1 | view logger'
                 }).then((res) => {
                     expect(res.sinks.logger[0].name).to.equal('conflict');
                     expect(res.sinks.logger[0].metric).to.equal('namefield');
@@ -559,22 +551,6 @@ describe('@integration influxdb tests', () => {
                         expect(res.sinks.logger.length).to.equal(3);
                     });
                 });
-
-                it('head n doesnt override limit', () => {
-                    return check_juttle({
-                        program: 'read influx -db "test" -limit 1 -from :0: name = "cpu" | head 3 | view logger'
-                    }).then((res) => {
-                        expect(res.sinks.logger.length).to.equal(1);
-                    });
-                });
-
-                it('head n doesnt override limit, unoptimized', () => {
-                    return check_juttle({
-                        program: 'read influx -optimize false -db "test" -limit 1 -from :0: name = "cpu" | head 3 | view logger'
-                    }).then((res) => {
-                        expect(res.sinks.logger.length).to.equal(1);
-                    });
-                });
             });
 
             describe('tail', () => {
@@ -595,22 +571,6 @@ describe('@integration influxdb tests', () => {
                         expect(res.sinks.logger.length).to.equal(3);
                         expect(res.sinks.logger[0].value).to.equal(7);
                         expect(res.sinks.logger[2].value).to.equal(9);
-                    });
-                });
-
-                it('tail n doesnt override limit', () => {
-                    return check_juttle({
-                        program: 'read influx -db "test" -limit 1 -from :0: name = "cpu" | tail 3 | view logger'
-                    }).then((res) => {
-                        expect(res.sinks.logger.length).to.equal(1);
-                    });
-                });
-
-                it('tail n doesnt override limit, unoptimized', () => {
-                    return check_juttle({
-                        program: 'read influx -optimize false -db "test" -limit 1 -from :0: name = "cpu" | tail 3 | view logger'
-                    }).then((res) => {
-                        expect(res.sinks.logger.length).to.equal(1);
                     });
                 });
             });
