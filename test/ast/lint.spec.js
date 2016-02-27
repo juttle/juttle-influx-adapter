@@ -4,6 +4,10 @@ var expect = require('chai').expect;
 var _ = require('underscore');
 var utils = require('../test_utils');
 
+var withAdapterAPI = require('juttle/test').utils.withAdapterAPI;
+
+withAdapterAPI(() => {
+
 var Linter = require('../../lib/ast/lint');
 
 describe('query linting', () => {
@@ -181,4 +185,6 @@ describe('query linting', () => {
             expect(linter.lint.bind(linter, ast, { nameField: 'name' })).to.throw(/Full text search is not supported/);
         });
     });
+});
+
 });
