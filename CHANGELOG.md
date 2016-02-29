@@ -3,6 +3,14 @@
 This file documents all notable changes to Juttle Influx Adapter. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## 0.5.1
+
+Released 2016-02-29
+
+- Fixed a bug where a file depended on old Adapter API and was not migrated.
+  This caused the adapter to break on missing require when Juttle wasn't resolvable
+  in the require path. Upgrade to 0.5.1 is needed to make it work again.
+
 ## 0.5.0
 
 Released 2016-02-24
