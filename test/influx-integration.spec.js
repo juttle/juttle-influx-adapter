@@ -447,8 +447,9 @@ describe('@integration influxdb tests', () => {
             it('successfully retrieves live points', () => {
                 return check_juttle({
                     program: 'read influx -db "test" -from :now: -to :end: -every :0.1s: name = "live" | view logger',
-                    realtime: true
-                }, 1200).then((res) => {
+                    realtime: true,
+                    deactivateAfter: 1200
+                }).then((res) => {
                     expect(res.sinks.logger.length).to.equal(10);
                     expect(res.sinks.logger[9].value).to.equal(9);
                 });
@@ -475,8 +476,9 @@ describe('@integration influxdb tests', () => {
 
                 return check_juttle({
                     program: 'read influx -db "test" -from :1s ago: -to :end: -every :0.1s: -lag :0.75s: name = "lag" | view logger',
-                    realtime: true
-                }, 1700).then((res) => {
+                    realtime: true,
+                    deactivateAfter: 1700
+                }).then((res) => {
                     expect(res.sinks.logger.length).to.equal(10);
                     expect(res.sinks.logger[9].value).to.equal(9);
                 });
@@ -501,8 +503,9 @@ describe('@integration influxdb tests', () => {
 
                 return check_juttle({
                     program: 'read influx -db "test" -from :1s ago: -to :end: -every :0.1s: -lag :0.5s: name = "lagnow" | view logger',
-                    realtime: true
-                }, 1700).then((res) => {
+                    realtime: true,
+                    deactivateAfter: 1700
+                }).then((res) => {
                     expect(res.sinks.logger.length).to.equal(10);
                     expect(res.sinks.logger[9].value).to.equal(9);
                 });
