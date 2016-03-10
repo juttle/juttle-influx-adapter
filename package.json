@@ -13,9 +13,10 @@
   "main": "index.js",
   "repository": "juttle/juttle-influx-adapter",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha test/**/*.spec.js test/*.spec.js",
     "lint": "eslint --ignore-pattern=./coverage/ .",
-    "cov": "istanbul cover _mocha && istanbul check-coverage"
+    "cov": "istanbul cover _mocha test/**/*.spec.js test/*.spec.js && istanbul check-coverage",
+    "perf": "node ./test/performance/index.js"
   },
   "dependencies": {
     "glob-to-regexp": "^0.1.0",
@@ -30,6 +31,8 @@
     "mocha": "^2.3.4",
     "eslint": "^1.10.3",
     "istanbul": "^0.4.2",
+    "microtime": "2.0.0",
+    "benchmark": "2.1.0",
     "bluebird-retry": "^0.5.2"
   },
   "engines": {
