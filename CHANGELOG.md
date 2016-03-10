@@ -3,6 +3,14 @@
 This file documents all notable changes to Juttle Influx Adapter. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## 0.6.0
+
+Released 2016-03-10
+
+- Requires Juttle Adapter API 0.5.2.
+
+- Improved performance of writes to InfluxDB.
+
 ## 0.5.1
 
 Released 2016-02-29
