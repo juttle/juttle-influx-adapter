@@ -27,6 +27,8 @@ Write a single point into the `cpu` measurement:
 emit -points [{ value: 0.01, host: 'www123', name: 'cpu' }] | write influx -db 'test'
 ```
 
+An end-to-end example is described [here](https://github.com/juttle/juttle-engine/tree/master/examples/cadvisor-influx) and deployed to the demo system [demo.juttle.io](http://demo.juttle.io/?path=/examples/cadvisor-influx/cadvisor-dashboard.juttle).
+
 ## Installation
 
 Like Juttle itself, the adapter is installed as a npm package. Both Juttle and
