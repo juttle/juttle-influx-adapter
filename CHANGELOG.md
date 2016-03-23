@@ -3,6 +3,12 @@
 This file documents all notable changes to Juttle Influx Adapter. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## 0.7.0
+
+Released 2016-03-23
+
+- Updated to support Juttle 0.7.0.
+
 ## 0.6.0
 
 Released 2016-03-10
