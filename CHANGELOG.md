@@ -5,7 +5,7 @@ numbering uses [semantic versioning](http://semver.org).
 
 ## 0.7.0
 
-Released 2016-03-23
+Released 2016-03-24
 
 - Updated to support Juttle 0.7.0.
 
