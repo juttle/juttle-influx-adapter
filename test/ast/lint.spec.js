@@ -185,6 +185,20 @@ describe('query linting', () => {
             expect(linter.lint.bind(linter, ast, { nameField: 'name' })).to.throw(/Full text search is not supported/);
         });
     });
+
+    it('doesnt allow nested field filters', () => {
+        var tests = [
+            'obj.field == 1',
+            'obj.field == "2"',
+            'obj.field != 3',
+            'obj.field < 4',
+        ];
+
+        _.each(tests, (test) => {
+            var ast = utils.parseFilter(test);
+            expect(linter.lint.bind(linter, ast, { nameField: 'name' })).to.throw(/Nested fields not supported/);
+        });
+    });
 });
 
 });
